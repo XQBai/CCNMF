@@ -1,7 +1,11 @@
 # CCNMF
-**C**oupled-Clone **N**onnegative **M**atrix **F**actorization (CCNMF) is a method for joint inference of clonal structure using paired tumor Single-cell DNA-Seq and RNA-Seq data. 
+**C**oupled-**C**lone **N**onnegative **M**atrix **F**actorization (CCNMF) is a method for joint inference of clonal structure using paired tumor Single-cell DNA-Seq and RNA-Seq data. The framework is based on optimizing an objective function that simultaneously maximizes clone structure coherence between single-cell gene expression matrix and copy number variants matrix, in which the two matrices are copuled by a dosage effect matrix linking expression to copy number. The Coupled matrix can be estimated priorly either by a linear regression model using public paired RNA and DNA bulk sequencing data, or by using an uninformative prior as an identity matrix. Finally, CCNMF simultaneously clusters the coressponding clones for gene expression (scRNA) data and copy number variants (scDNA) data from the same tumor. 
 
 ## Installation
+
+```
+devtools::install_github("XQBai/CCNMF")
+```
 
 ## Authors
 
