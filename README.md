@@ -1,5 +1,5 @@
 # CCNMF
-<u>C</u>oupled-Clone Nonnegative Matrix Factorization (CCNNM) is a method for joint inference of clonal structure using paired tumor Single-cell DNA-Seq and RNA-Seq data. 
+**C**oupled-Clone **N**onnegative **M**atrix **F**actorization (CCNMF) is a method for joint inference of clonal structure using paired tumor Single-cell DNA-Seq and RNA-Seq data. 
 
 ## Installation
 
