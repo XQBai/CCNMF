@@ -9,11 +9,12 @@ devtools::install_github("XQBai/CCNMF")
 ## Usage
 A tutorial on CCNMF usage and results analysis for real paired scRNA and scDNA data can be found in this notebook:
 
-[real]()
+[CCNMF analyze real data](https://github.com/XQBai/CCNMF/blob/master/notebooks/Real_data_analysis.ipynb)
 
 A tutorial on simulation procedures and CCNMF analysis for simulated paired scRNA and scDNA data can be found in this notebook:
 
-[Simulation procedures and CCNMF analysis]()
+[Simulation procedures](https://github.com/XQBai/CCNMF/blob/master/notebooks/SimulationProcedures.ipynb)
+[CCNMF analyze simulated data](https://github.com/XQBai/CCNMF/blob/master/notebooks/CCNMF_analyze_simulated_data.ipynb)
 
 ## Paper
 [Joint Inference of Clonal Structure using Single-cell DNA-Seq and RNA-Seq data]()
@@ -21,9 +22,6 @@ A tutorial on simulation procedures and CCNMF analysis for simulated paired scRN
 ## Authors
 
 Xiangqi Bai, Lin Wan and Li C. Xia.
-
-## References
-
 
 ## License
 [MIT](https://github.com/XQBai/CCNMF/blob/master/LICENSE)
