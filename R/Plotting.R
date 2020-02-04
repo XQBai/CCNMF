@@ -21,7 +21,10 @@ PlotMainResult <- function(CNVmatrix, RNAmatrix, Result_CCNMF, DElist){
   #RNAdim <- RNAdim + scale_colour_manual(values = hue_pal()(ncluster))
 
   myplot <- plot_grid(DNAheat, RNAheat, DNAdim, RNAdim, labels = c('A', 'B', 'C', 'D'), label_size = 12, scale = c(0.95, 0.95, 1, 1))
+<<<<<<< HEAD
   dev.off()
+=======
+>>>>>>> c773e3c756507e2ce1cd3d284df1d6b8f44dbb4b
   ggsave(file='allfigure.pdf', plot = myplot, width = 8.5, height = 6)
 }
 
