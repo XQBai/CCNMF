@@ -14,6 +14,7 @@ A tutorial on CCNMF usage and results analysis for real paired scRNA and scDNA d
 A tutorial on simulation procedures and CCNMF analysis for simulated paired scRNA and scDNA data can be found in this notebook:
 
 [Simulation procedures](https://github.com/XQBai/CCNMF/blob/master/notebooks/SimulationProcedures.ipynb)
+
 [CCNMF analyze simulated data](https://github.com/XQBai/CCNMF/blob/master/notebooks/CCNMF_analyze_simulated_data.ipynb)
 
 ## Paper
