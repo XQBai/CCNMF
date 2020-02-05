@@ -9,10 +9,6 @@
 devtools::install_github("XQBai/CCNMF")
 ```
 ## Usage
-### A tutorial on CCNMF analyze cell mixture paired scRNA and scDNA data can be found in this notebook:
-
-[https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/Real_data_analysis.ipynb](https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/Real_data_analysis.ipynb)
-
 ### A tutorial on simulation procedures can be found in this notebook:
 
 [https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/SimulationProcedures.ipynb](https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/SimulationProcedures.ipynb)
@@ -20,6 +16,9 @@ devtools::install_github("XQBai/CCNMF")
 ### A tutoral on CCNMF analyze simulated paired scRNA and scDNA data
 
 [https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/CCNMF_analyze_simulated_data.ipynb](https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/CCNMF_analyze_simulated_data.ipynb)
+### A tutorial on CCNMF analyze cell mixture paired scRNA and scDNA data can be found in this notebook:
+
+[https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/Real_data_analysis.ipynb](https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/Real_data_analysis.ipynb)
 
 ## Paper
 [Joint Inference of Clonal Structure using Single-cell DNA-Seq and RNA-Seq data]()
