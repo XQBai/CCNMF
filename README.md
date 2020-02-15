@@ -10,15 +10,15 @@
 ```
 devtools::install_github("XQBai/CCNMF")
 ```
-## Usage
-### A tutorial on simulation procedures can be found in this notebook:
+## Examples
+### An example of paired scDNA and scRNA simulation:
 
 [https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/SimulationProcedures.ipynb](https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/SimulationProcedures.ipynb)
 
-### A tutoral on CCNMF analyze simulated paired scRNA and scDNA data
+### An example of CCNMF analysis of simulated paired scRNA and scDNA data
 
 [https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/CCNMF_analyze_simulated_data.ipynb](https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/CCNMF_analyze_simulated_data.ipynb)
-### A tutorial on CCNMF analyze cell mixture paired scRNA and scDNA data can be found in this notebook:
+### An example of CCNMF analysis of real paired scRNA and scDNA data from a cell mixture:
 
 [https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/Real_data_analysis.ipynb](https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/Real_data_analysis.ipynb)
 
