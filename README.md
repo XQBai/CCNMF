@@ -25,7 +25,7 @@ devtools::install_github("XQBai/CCNMF")
 ## Reference
 [Xiangqi Bai, Lin Wan and Li C. Xia. Joint Inference of Clonal Structure using Single-cell DNA-Seq and RNA-Seq data, bioRxiv](https://www.biorxiv.org/content/10.1101/2020.02.04.934455v1)
 
-## License
-[MIT](https://github.com/XQBai/CCNMF/blob/master/LICENSE)
-
+<!--## License-->
+<!--[MIT](https://github.com/XQBai/CCNMF/blob/master/LICENSE)-->
+## Contact
 ### If there are any questions, please contact xqbai@amss.ac.cn or xiangqi@stanford.edu.
