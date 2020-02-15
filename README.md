@@ -28,4 +28,4 @@ devtools::install_github("XQBai/CCNMF")
 <!--## License-->
 <!--[MIT](https://github.com/XQBai/CCNMF/blob/master/LICENSE)-->
 ## Contact
-### If there are any questions, please contact xqbai@amss.ac.cn or xiangqi@stanford.edu.
+### xqbai@amss.ac.cn and li.xia@einsteinmed.org.
