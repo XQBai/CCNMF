@@ -1,4 +1,7 @@
 # CCNMF
+
+## Overview
+
 **C**oupled-**C**lone **N**onnegative **M**atrix **F**actorization (CCNMF) is a method for joint inference of clonal structure using paired Single-cell DNA-Seq and RNA-Seq data. The framework is based on optimizing an objective function that maximizes clone structure coherence between single-cell gene expression and copy number profiles, in which the two profiles are copuled by the dosage effect. The coupling dosage effect can be estimated a prior either by a linear regression model using publicly aviable paired RNA and DNA bulk sequencing data ([TCGA](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga)), or by using an uninformative prior. The workflow in CCNMF is illustrated in the figure below.
 ![](https://github.com/XQBai/CCNMF/blob/master/image/CCNMFflow.png)
 
