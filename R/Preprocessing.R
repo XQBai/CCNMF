@@ -155,11 +155,7 @@ Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19
 
   # Map it on ensembl gene ids
   entrezgene_ensembl_map <- as.list(org.Hs.egENSEMBL)
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> c773e3c756507e2ce1cd3d284df1d6b8f44dbb4b
   entrezgene_ensembl_map <- lapply(entrezgene_ensembl_map, `[`, 1)
   df_gene <- dplyr::filter(df_gene, entrezgene %in% names(entrezgene_ensembl_map)) %>%
     dplyr::mutate(ensembl_gene_id = unlist(entrezgene_ensembl_map[entrezgene])) %>%
@@ -190,13 +186,6 @@ Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19
   return(list(CNVmatrix_match1, RNAmatrix_match, CoupledMatrix))
 }
 
-<<<<<<< HEAD
-=======
-process_DNA_matrix <- function(){
-
-}
-
->>>>>>> c773e3c756507e2ce1cd3d284df1d6b8f44dbb4b
 #' Preprocessed scRNA matrix by Seurat including Normalization, scaling and selcting high variable genes.
 #' Input the path where the 10X RNA-seq located
 process_RNA_matrix <- function(pathRNA){
@@ -211,7 +200,8 @@ process_RNA_matrix <- function(pathRNA){
   return(RNAmatrix)
 }
 
-<<<<<<< HEAD
+#'
+#'
 AlignRNAgenes <- function(pathRNA, RNAobject){
   Gene <- read.table(file.path(pathRNA, 'genes.tsv'))
   RNAscale <- RNAobject@assays$RNA@scale.data[RNAobject@assays$RNA@var.features, ]
@@ -255,6 +245,4 @@ run_Seurat_RNA <- function(RNAdata, min.cells = 6, min.features = 0){
   return(RNAobject)
 }
 
-=======
->>>>>>> c773e3c756507e2ce1cd3d284df1d6b8f44dbb4b
 
