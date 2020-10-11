@@ -24,7 +24,7 @@ devtools::install_github("XQBai/CCNMF")
 [https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/Real_data_analysis.ipynb](https://nbviewer.jupyter.org/github/XQBai/CCNMF/blob/master/notebooks/Real_data_analysis.ipynb)
 
 ## Reference
-[Xiangqi Bai, Zhana Duren, Lin Wan and Li C. Xia. [Joint Inference of Clonal Structure using Single-cell Genome and Transcriptome Sequencing Data, bioRxiv](https://www.biorxiv.org/content/10.1101/2020.02.04.934455v2)
+Xiangqi Bai, Zhana Duren, Lin Wan and Li C. Xia. [Joint Inference of Clonal Structure using Single-cell Genome and Transcriptome Sequencing Data, bioRxiv](https://www.biorxiv.org/content/10.1101/2020.02.04.934455v2)
 
 <!--## License-->
 <!--[MIT](https://github.com/XQBai/CCNMF/blob/master/LICENSE)-->
