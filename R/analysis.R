@@ -117,7 +117,9 @@ DiffExpCluster <- function(Data, label, i){
 #' @return P the p_values matrix, the rows correspond to the clusters, the cloumns correspond to the genes
 #' @return DEgenes, the differential genes for each clusters. the each row is the DE genes for each cluster.
 DiffExp <- function(Data, label){
-
+  
+  std <- apply(Data, 1, sd)
+  Data <- Data[which(std != 0), ]
   P <- matrix(0, dim(Data)[1], max(label))
   for (j in 1:max(label)){
     ###sapply

@@ -3,24 +3,24 @@
 #' Especially, the paired heatmap of differential genes and dimension reduction for both scRNA-seq and scDNA-seq data
 PlotMainResult <- function(CNVmatrix, RNAmatrix, Result_CCNMF, DElist){
 
-  #ncluster <- max(Result_CCNMF[[5]])
-  DNAheat <- Plot_heatmap(CNVmatrix, Result_CCNMF[[5]], DElist[[1]], Datatype = 'DNA', title = 'The heatmap of scDNA-seq data')
+  if(is.list(DElist)){
+    P <- DElist[[1]]
+  }else if (is.character(DElist)){
+    P <- DElist
+  }
+  DNAheat <- Plot_heatmap(CNVmatrix, Result_CCNMF[[5]], P, Datatype = 'DNA', title = 'Signature gene heatmap of scDNA-seq data')
   DNAheat <- as.ggplot(DNAheat)
-  RNAheat <- Plot_heatmap(RNAmatrix, Result_CCNMF[[6]], DElist[[1]], Datatype = 'RNA', title = 'The heatmap of scRNA-seq data')
+  RNAheat <- Plot_heatmap(RNAmatrix, Result_CCNMF[[6]], P, Datatype = 'RNA', title = 'Signature gene heatmap of scRNA-seq data')
   RNAheat <- as.ggplot(RNAheat)
-  #DNAheat <- DNAheat + scale_colour_manual(values = hue_pal()(ncluster))
-  #RNAheat <- DNAheat + scale_colour_manual(values = hue_pal()(ncluster))
+  
   H1 <- Result_CCNMF[[1]]
   H2 <- Result_CCNMF[[2]]
   S1 <- Result_CCNMF[[5]]
   S2 <- Result_CCNMF[[6]]
-  DNAdim <- Plottsne(H1, S1, 'Tsne for scDNA-seq data', Datatype = 'scDNA-seq', need_PCA = FALSE)
-  RNAdim <- Plottsne(H2, S2, 'Tsne for scRNA-seq data', Datatype = 'scRNA-seq', need_PCA = FALSE)
+  DNAdim <- Plottsne(H1, S1, 'Tsne plot of scDNA-seq data', Datatype = 'scDNA-seq', need_PCA = FALSE)
+  RNAdim <- Plottsne(H2, S2, 'Tsne plot of scRNA-seq data', Datatype = 'scRNA-seq', need_PCA = FALSE)
 
-  #DNAdim <- DNAdim + scale_colour_manual(values = hue_pal()(ncluster))
-  #RNAdim <- RNAdim + scale_colour_manual(values = hue_pal()(ncluster))
-
-  myplot <- plot_grid(DNAheat, RNAheat, DNAdim, RNAdim, labels = c('A', 'B', 'C', 'D'), label_size = 12, scale = c(0.95, 0.95, 1, 1))
+  myplot <- plot_grid(DNAdim, RNAdim, DNAheat, RNAheat, labels = c('A', 'B', 'C', 'D'), label_size = 12, scale = c(1, 1, 0.95, 0.95))
   dev.off()
   ggsave(file='allfigure.pdf', plot = myplot, width = 8.5, height = 6)
 }
@@ -102,11 +102,11 @@ Plot <- function(Data, Cluster, title, labelx,  labely){
   Data <- as.data.frame(Data)
   colnames(Data) <- c('V1', 'V2')
   ncluster <- max(Cluster)
-  Cluster <- paste0('C', Cluster, sep='')
-  myplot <- ggplot(data = Data, aes(x = V1, y=V2, color = Cluster)) +
+  Clones <- paste0('C', Cluster, sep='')
+  myplot <- ggplot(data = Data, aes(x = V1, y=V2, color = Clones)) +
     geom_point(size = 1) +
-    labs(title= title, x = labelx, y= labely, fill = 'Cluster') +
-    scale_fill_discrete(name='Clone') +
+    labs(title= title, x = labelx, y= labely, fill = 'Clones') +
+    scale_fill_discrete(name='Clones') +
     theme(plot.title = element_text(size = 11, color = 'black', face = 'bold', hjust = 0.5)) +
     theme(axis.title.x = element_text(size = 11,  color = 'black', face = 'bold', vjust=0.5, hjust = 0.5)) +
     theme(axis.title.y = element_text(size = 11, color = 'black', face = 'bold', vjust=0.5, hjust = 0.5)) +
@@ -114,17 +114,19 @@ Plot <- function(Data, Cluster, title, labelx,  labely){
     theme(axis.text.y = element_text(size = 7, color = 'black', face = 'bold')) +
     theme(legend.text= element_text(size=7,color="black", face= "bold", vjust=0.5, hjust=0.5)) +
     theme(legend.title = element_text(size=7,color="black", face= "bold"))
-
-  if (ncluster == 2){
-    myplot <- myplot + scale_colour_manual(values = c('C1' = "#00BFC4", 'C2' = "#F8766D"))
-  }else if (ncluster == 3){
-    myplot <- myplot + scale_colour_manual(values = c('C1' = "#00BA38", 'C2' = "#F8766D", 'C3' = "#619CFF"))
-  }else if (ncluster == 4){
-    myplot <- myplot + scale_colour_manual(values = c('C1' = "#A3A500", 'C2' = "#F8766D", 'C3' = "#00BF7D", 'C4' = "#E76BF3"))
+  if(length(unique(Cluster)) == 2){
+    Label_color <- c('C1' = "#00BFC4", 'C2' = "#F8766D")
+  }else if(length(unique(Cluster)) >=3 & length(unique(Cluster)) <= 9){
+    Label_color <- brewer.pal(length(unique(Cluster)), "Set1")
+    label_cluster <- paste0('C', Cluster)
+    names(Label_color) <- sort(unique(label_cluster))
+  }else if(length(unique(Cluster)) > 9){
+    print("The number of clusters exceed 9, please add additional colorlabel for clusters.")
   }
+  
+  myplot <- myplot + scale_colour_manual(values = Label_color)
   return(myplot)
 }
-
 
 #' Plot the heatmap for differential genes in scRNA-seq data
 #'
@@ -137,11 +139,18 @@ Plot <- function(Data, Cluster, title, labelx,  labely){
 #' @return A pdf file which is the heatmap figure
 Plot_heatmap <- function(Data, label, P, Datatype = 'DNA', title = 'The heatmap of differential expression in scRNA-seq data'){
 
-  index <- apply(P, 2, function(x){order(x, decreasing=F)[1:7]})
-  DEgene <- c()
-  for (i in 1: dim(index)[2]){
-    DEgene <- c(DEgene, rownames(P)[index[, i]])
+  # if input P is a dataframe, which means the p-values for each cluster
+  # otherwise, P is the vector of differential genes, whose format is character.
+  if(is.data.frame(P)){
+    index <- apply(P, 2, function(x){order(x, decreasing=F)[1:10]})
+    DEgene <- c()
+    for (i in 1: dim(index)[2]){
+      DEgene <- c(DEgene, rownames(P)[index[, i]])
+    }
+  }else if(is.character(P)){
+    DEgene <- P
   }
+
   D <- Data[unique(DEgene), ]
   cluster_num <- c()
   cell_name <- c()
@@ -162,13 +171,13 @@ Plot_heatmap <- function(Data, label, P, Datatype = 'DNA', title = 'The heatmap 
   colnames(D_assign) <- cell_name
   D_assign <- as.data.frame(t(D_assign))
 
-  annotation_row = data.frame(Cluster = factor(rep(paste('C', 1:max(label), sep = ''), cluster_num)))
+  annotation_row = data.frame(Clones = factor(rep(paste('C', 1:max(label), sep = ''), cluster_num)))
   rownames(annotation_row) = cell_name
 
   if(Datatype == 'DNA'){
-    myplot <- pheatmap(D_assign, color=colorRampPalette(rev(c("red","white","blue")))(102), cluster_cols = FALSE, cluster_rows = FALSE, show_rownames = F, fontsize = 7, annotation_row = annotation_row, angle_col = "45",annotation_legend = FALSE, main = title)
+    myplot <- pheatmap::pheatmap(D_assign, color=colorRampPalette(rev(c("red","white","blue")))(102), cluster_cols = FALSE, cluster_rows = FALSE, show_rownames = F, fontsize = 7, annotation_row = annotation_row, angle_col = "45",annotation_legend = FALSE, main = title)
   }else{
-    myplot <- pheatmap(D_assign, color=colorRampPalette(rev(c("red","white","blue")))(102), cluster_cols = FALSE, cluster_rows = FALSE, show_rownames = F, fontsize = 7, annotation_row = annotation_row, angle_col = "45",annotation_legend = FALSE, main = title)
+    myplot <- pheatmap::pheatmap(D_assign, color=colorRampPalette(rev(c("red","white","blue")))(102), cluster_cols = FALSE, cluster_rows = FALSE, show_rownames = F, fontsize = 7, annotation_row = annotation_row, angle_col = "45",annotation_legend = FALSE, main = title)
   }
   return(myplot)
 }

@@ -1,0 +1,4 @@
+Iteration 500
+Iteration 191768.180549473
+Iteration 1422854.42839195
+Iteration 87381.9241299063
