@@ -2,6 +2,11 @@
 #' Run CCNMF function
 #' Run \code{CCNMF} accross a range pf initializations
 #'
+#' @importFrom preprocessCore 'normalize.quantiles.robust'
+#' @importFrom RcppHungarian 'HungarianSolver'
+#' @import NMF
+#' @import stats
+#'
 #' @param ncluster the number of subpopulations/clones seted by users
 #' @param RNAmatrix A matrix of gene expression in scRNA-seq
 #' @param CNVmatrix A matrix of copy number in scDNA-seq
@@ -16,27 +21,19 @@
 #' @export
 #'
 #' @return The list(H1, H2, S1, S2)
-#'
-#' @examples
-#' library(NMF)
-#' RNAmatrix <-
-#' CNVmatrix <-
-#' CoupledMatrix <-
-#' Result <- run_CCNMF(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, lambda2)
-
 run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, lambda2){
-  
+
   tolx <- 1e-4
   tolfun <- 1e-6
   rate <- 1
-  
+
   start <- proc.time()
   print('Initializing W10 and H10...')
   ngenes <- dim(CNVmatrix)[1]
   ncells <- dim(CNVmatrix)[2]
   W10 <- matrix(runif(ngenes*ncluster, 0, 1), ngenes, ncluster)
   H10 <- matrix(runif(ncluster * ncells, 0, 1), ncluster, ncells)
-  
+
   print('Initializing W20 and H20 matrirx...')
   ngenes <- dim(RNAmatrix)[1]
   ncells <- dim(RNAmatrix)[2]
@@ -49,17 +46,17 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
     m1[i, i] <- sqrt(sum(W10[, i]^2))
     m2[i, i] <- sqrt(sum(W20[, i]^2))
   }
-  
+
   W10 <- W10 %*% solve(m1)
   W20 <- W20 %*% solve(m2)
-  
+
   print('Initializing the parameters lambda1, lambda2...')
-  
+
   print('Start Coupled NMF')
   E <- RNAmatrix
   O <- CNVmatrix
   A <- CoupledMatrix
-  
+
   eps <- 0.0001
   err <- 1
   print('Iterating coupledNMF...')
@@ -74,7 +71,7 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
     it <- it + 1
     nassign <- 0
     # print(it)
-    
+
     ## The updated algorithms
     # T1 <- as.matrix(lambda2 * (t(A) %*% W20))
     # T1[which(T1 < 0)] <- 0
@@ -86,7 +83,7 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
     # mu12 <- sum(apply(t(W10) %*% (O %*% t(H10) + lambda2* t(A) %*% W20), MARGIN = 2, sum))
     # W1 <- W10 * (numer + T1 + W10 * mu11) / (eps + W10 %*% H1 %*% t(H1) + W10 * mu12)
     # W1[which(W1 <0)] <- W1
-    # 
+    #
     # T2 <- as.matrix((lambda2 / (lambda1 + eps)) * (A %*% W1))
     # T2[which(T2 < 0)] <- 0
     # numer <- t(W20) %*% E
@@ -96,7 +93,7 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
     # mu22 <- sum(apply(t(W20) %*% (E %*% t(H20) + T2), MARGIN = 2, sum))
     # W2 <- W20 * (E %*% t(H20) + T2 + W20 * mu21) / (eps + W20 %*% H2 %*% t(H2) + W20 * mu22)
     # W2[which(W2 < 0)] <- 0
-    
+
     T1 <- as.matrix(lambda2 * (t(A) %*% W20))
     T1[which(T1 < 0)] <- 0
     numer <- t(W10) %*% O
@@ -118,7 +115,7 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
     mu22 <- diag(apply(W20*(W20 %*% (H2 %*% t(H2))), MARGIN = 2, sum))
     W2 <- W20 * (numer + T2 + W20 %*% mu22) / (eps + W20 %*% H2 %*% t(H2) + W20 %*% mu21)
     W2[which(W2 < 0)] <- 0
-    
+
     dnorm1 <- norm((O-W1 %*% H1), type <- 'F')**2 + lambda1 * (norm(E - W2 %*% H2)**2)
     dw1 <- max(abs(W1-W10))/(max(abs(W10)) + eps)
     dh1 <- max(abs(H1-H10))/(max(abs(H10)) + eps)
@@ -186,7 +183,7 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
   H1 <- H10
   W2 <- W20
   H2 <- H20
-  
+
   Score <- 0.5*(norm((O - W1 %*% H1), type <- 'F')**2) + lambda1/2 * (norm(E - W2 %*% H2)**2) - lambda2 * sum(diag(t(W2) %*% A %*% W1))
   S1 <- apply(H1, 2, function(x){which(x == max(x))})
   S2 <- apply(H2, 2, function(x){which(x == max(x))})
@@ -199,7 +196,7 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
   # T <- t(WP2) %*% A %*% WP1
   # T1 <- sum(apply(T, MARGIN=2, sum) %*% diag(1/apply(T, MARGIN = 2, function(x)(sum(x)**2))) %*% T %*% diag(1/apply(T, MARGIN = 2, sum)))
   # detr <- sum(diag(T))
-  
+
   # S10 <- apply(H1, 2, function(x){which(x == max(x))})
   # S20 <- apply(H2, 2, function(x){which(x == max(x))})
   # FC1 <- matrix(0, nrow <- ngenes, ncol <- ncluster)
@@ -219,11 +216,11 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
   # H2 <- H2[assignment[, 2], ]
   # print(assignment)
   # print(HungarianSolver(S)$cost)
-  
+
   eq1 <- 0.5*(norm((O - W1 %*% H1), type <- 'F')**2)
   eq2 <- lambda1/2 * (norm(E - W2 %*% H2)**2)
   eq3 <- lambda2 * sum(diag(t(W2) %*% A %*% W1))
-  
+
   print(paste0('eq1 ', round(eq1)))
   print(paste0('eq2 ', round(eq2)))
   print(paste0('eq3 ', round(eq3)))

@@ -1,47 +1,56 @@
-
+#' @import RColorBrewer
+#' @param CNVsample copy number data matrix with all genes
+#' @param label subclones labeling of CCNMF
+#' @param Gene_order dataframe of genes locs
+#' @param index_remain_cells cell index of non-replicating cells
+#' @return the figure of subclones heatmap
+#' @export
 PLot_CNV_subclone_heatmap <-function(CNVsample, label, Gene_Order, index_remain_cells){
-  
+
   Label <- matrix(0, nrow=dim(CNVsample)[2])
   Label[index_remain_cells] <- label
   Label <- Label + 1
-  
+
   Gene_Order[['Gene_ID']] = as.character(Gene_Order[["gene"]])
   Gene_Order[['Gene_Chr']] = as.character(Gene_Order[["chr"]])
   row.names(Gene_Order) = Gene_Order[['Gene_ID']]
-  
+
+  CNVsample <- as.data.frame(CNVsample)
   CNVsample[["Gene_ID"]] = rownames(CNVsample)
+
   #there are genes in gistic output not represented in Gene_Order
   #and vice versa
   Gene_Order = Gene_Order[Gene_Order[['Gene_ID']] %in% CNVsample[['Gene_ID']],]
   CNVsample = CNVsample[CNVsample[["Gene_ID"]] %in% Gene_Order[['Gene_ID']],]
-  
+
   row_genes <- CNVsample[['Gene_ID']]
   CNVsample$Gene_ID <- NULL
-  row.names(CNVsample) <- row_genes  
+  row.names(CNVsample) <- row_genes
 
   ###bug
-  CNVsample  <- CNVsample[Gene_Order[['Gene_ID']], ] #reorder Charlie_Gistic2_CNR 
-  
+  CNVsample  <- CNVsample[Gene_Order[['Gene_ID']], ] #reorder Charlie_Gistic2_CNR
+
   rownames(CNVsample) <- Gene_Order[['Gene_ID']]
 
   mat = t(CNVsample)
   mat <- SortCells(t(mat), Label)
   mat[mat > 6] = 6
-  
+
   Labels <- rep(paste0('C', sort(unique(Label)-1)), table(Label))
   Labels <- data.frame(cluster = Labels)
-  
+
   gene_chr = rle(Gene_Order[["Gene_Chr"]][match(colnames(mat), Gene_Order[["Gene_ID"]])])
   gene_chr_mark = c(0, cumsum(gene_chr$lengths))[seq_along(gene_chr$lengths)]+1
   names(gene_chr_mark) = gene_chr$values
 
-  obj <- Sort_subclones(mat, Labels, hc)
-  mat <- obj[[1]]
-  labels <- obj[[2]]
-  Plot_CNV_heatmap(mat, labels, gene_chr_mark, 'Subclones_no_noise.pdf')
+  Plot_CNV_heatmap(mat, Labels, gene_chr_mark, 'Subclones_no_noise.pdf')
 }
 
-
+#' @param mat the matrix of segments-bins
+#' @param labels subclones index for cells
+#' @param hc results of hierarchical clustering
+#' @return list of ordered matrix and cluster label
+#'
 Sort_subclones <- function(mat, labels, hc){
   order <- paste0('C', hc$order)
   index <- c()
@@ -54,12 +63,15 @@ Sort_subclones <- function(mat, labels, hc){
   return(list(mat, labels))
 }
 
-# b <- SortCells(CNVsample)
+#' @param tmp_scdna_matrix_arm scDNA matrix
+#' @param S1 labels of subclonses
+#' @return Ordered cells based on per subclones
+#' @export
 SortCells <- function(tmp_scdna_matrix_arm, S1){
   ## Re-order cells according to the cluster labels
   clusterlabel <- c()
   barcodes <- c()
-  
+
   tmp_matrix <- as.data.frame(matrix(0, dim(tmp_scdna_matrix_arm)[1], dim(tmp_scdna_matrix_arm)[2]))
   for (j in 1:max(S1)){
     clusterlabel <- c(clusterlabel, length(which(S1 == j)))
@@ -79,13 +91,24 @@ SortCells <- function(tmp_scdna_matrix_arm, S1){
   return(tmp_matrix)
 }
 
-
+#' @import RColorBrewer
+#' @import ComplexHeatmap
+#' @import circlize
+#' @import ggplot2
+#' @import grDevices
+#' @import grid
+#' @param mat matrix of copy number
+#' @param labels subclones clustering labels
+#' @param gene_chr_mark chromosome regions
+#' @param filename the name of output figure
+#' @return the pdf figure
+#' @export
 Plot_CNV_heatmap <- function(mat, labels, gene_chr_mark, filename){
-  
+
   ht_font = 40
   grid_height = 1
   col_fun = colorRamp2(c(0,1,2,3,4,5,6), c('blue', 'light blue', 'white', 'light salmon', 'coral', 'red', 'dark red'))
-  
+
   if(length(unique(labels$cluster)) > 9){
     mycol = brewer.pal(9, 'Set1')
     Label_color <- c(mycol, brewer.pal(12, 'Set3')[10:12], "#666666")
@@ -100,12 +123,12 @@ Plot_CNV_heatmap <- function(mat, labels, gene_chr_mark, filename){
     Label_color <- c('red')
     names(Label_color) <- sort(unique(labels$cluster))
   }
-  
+
   column_ha = HeatmapAnnotation(Chr = ComplexHeatmap::anno_mark(at=gene_chr_mark[1:22],
                                                                 side="bottom",
                                                                 labels=names(gene_chr_mark)[1:22],
                                                                 labels_gp = grid::gpar(fontsize = ht_font)))
-  
+
   ht1 = Heatmap(mat,name = 'CNV', na_col = 'white', show_row_dend = FALSE,
                 show_column_dend = FALSE,
                 show_row_names = FALSE,
@@ -117,13 +140,13 @@ Plot_CNV_heatmap <- function(mat, labels, gene_chr_mark, filename){
                 cluster_rows = FALSE,
                 row_gap = grid::unit(0.3, "in"),
                 height = grid::unit(18, 'in'),
-                width = grid::unit(36, 'in'), 
+                width = grid::unit(36, 'in'),
                 heatmap_legend_param = list(title_gp = gpar(fontsize = ht_font, fontface = "bold"),
                                             direction = "horizontal",
                                             grid_width = grid::unit(grid_height, 'inch'),
                                             grid_height = grid::unit(grid_height,"inch" ),
-                                            labels_gp = gpar(fontsize = 0.8 * ht_font))) 
-  
+                                            labels_gp = gpar(fontsize = 0.8 * ht_font)))
+
   ht2 = Heatmap(labels$cluster,name = 'Subclone', col = Label_color, show_row_dend = FALSE,
                 show_column_dend = FALSE,
                 show_row_names = FALSE,
@@ -132,14 +155,14 @@ Plot_CNV_heatmap <- function(mat, labels, gene_chr_mark, filename){
                 cluster_columns = FALSE,
                 cluster_rows = FALSE,
                 row_gap = grid::unit(0.3, "in"),
-                width = grid::unit(0.5, 'in'), 
+                width = grid::unit(0.5, 'in'),
                 heatmap_legend_param = list(title_gp = gpar(fontsize = ht_font, fontface = "bold"),
                                             direction = "horizontal",
                                             grid_width = grid::unit(grid_height, 'inch'),
                                             grid_height = grid::unit(grid_height,"inch" ),
                                             labels_gp = gpar(fontsize = 0.8 * ht_font)))
   ht_list = ht1 + ht2
-  
+
   pdf(file=filename, width=40, height=20)
   ComplexHeatmap::draw(ht_list,
                        ht_gap = unit(0.5, 'cm'),

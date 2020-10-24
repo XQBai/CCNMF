@@ -1,8 +1,8 @@
+
+library(Matrix)
 library(NMF)
 library(dplyr)
 library(tidyr)
-
-library(Matrix)
 library(devtools)
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
@@ -39,6 +39,5 @@ library(RColorBrewer)
 library(Hmisc)
 library(ComplexHeatmap)
 library(circlize)
-library(CCNMF)
 #use_package("NMF", min_version = '0.21.0')
 #use_package("ggplot2", min_version = '3.2.1')

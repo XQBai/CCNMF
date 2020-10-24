@@ -1,5 +1,6 @@
 
 #' Input the gene expression matrix which is from 10X
+#' @import Matrix
 #' @param pathRNA the path of the standard three files: barcodes.tsv, genes.tsv, matrix.mtx located
 #' @param file_gene the name of the gene file. Default is 'genes.tsv'
 #' @param file_barcodes the name of the barcode file. Default is 'barcodes.tsv'
@@ -93,9 +94,9 @@ QualityControl <- function(RNAmatrix){
   return(RNAmatrix)
 }
 
-#' Filter genes which is not expressed in less than 10% cells
+#' @description Filter genes which did not express in less than 10% cells
 #'
-#' @param The gene expression matrix of scRNA-seq
+#' @param RNAmatrix The gene expression matrix of scRNA-seq
 #' @return The filtered gene expression
 gene_filter <- function(RNAmatrix){
   Filter <- apply(RNAmatrix, 1, function(x){
@@ -111,6 +112,15 @@ gene_filter <- function(RNAmatrix){
 #' Find the corresponding cnv regions and gene bins according to the reference genome.
 #' This function refers as below:
 #' https://kieranrcampbell.github.io/clonealign/preparing_copy_number_data.html
+#' @import TxDb.Hsapiens.UCSC.hg19.knownGene
+#' @import TxDb.Hsapiens.UCSC.hg38.knownGene
+#' @import IRanges
+#' @import dplyr
+#' @import org.Hs.eg.db
+#' @import GenomicRanges
+#' @import stringr
+#' @import tidyr
+#' @import S4Vectors
 #'
 #' @param RNAmatrix the gene expression matrix which is a matrix file
 #' @param CNVmatrix the copy number varients matrix which is a dataframe file
@@ -119,10 +129,6 @@ gene_filter <- function(RNAmatrix){
 #' @return RNAmatrix_match in which the number of genes equals to the number of cnv regions in
 #'  CNVmatrix_match. More details, the genes in RNAmatrix_match is one-to-one correspondence with the
 #'  cnv regions in CNVmatrix_match.
-#' @return CoupledMatrix which is a indentify matrix means the dosage effect between corresponding
-#' genes and cnv regions from the RNAmatrix_match to CNVmatrix_match. And its dimension is the number
-#' genes in RNAmatrix_match.
-
 Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19'){
 
   if(reference_name == 'hg19'){
@@ -188,6 +194,7 @@ Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19
 
 #' Preprocessed scRNA matrix by Seurat including Normalization, scaling and selcting high variable genes.
 #' Input the path where the 10X RNA-seq located
+#' @import Seurat
 process_RNA_matrix <- function(pathRNA){
 
   RNAdata <- Read10X(data.dir = pathRNA)
@@ -201,6 +208,7 @@ process_RNA_matrix <- function(pathRNA){
 }
 
 #'
+#' @import data.table
 #'
 AlignRNAgenes <- function(pathRNA, RNAobject){
   Gene <- read.table(file.path(pathRNA, 'genes.tsv'))
@@ -230,6 +238,7 @@ ConvertGenenames <- function(inputgene, Gene, Logic=TRUE){
 
 #' Preprocessing single-cell RNA-seq data by Seurat including normalization, scale, select high
 #' variable features.
+#' @import Seurat
 run_Seurat_RNA <- function(RNAdata, min.cells = 6, min.features = 0){
   #RNAdata <- Read10X(data.dir = path)
   RNAobject <- CreateSeuratObject(counts = RNAdata, project = 'RNAobject', min.cells = min.cells, min.features = min.features)

@@ -1,6 +1,6 @@
 
 #' Analysis the results of CCNMF
-AnalyzeResult <- function(RNAmatrix, CNVmatrix, ncluster = 3, lambda1, lambda2, mu=1, QC = TRUE, GeneFilter=TRUE, reference_name = 'hg38'){
+AnalyzeResult <- function(RNAmatrix, CNVmatrix, ncluster = 3, lambda1, lambda2, QC = TRUE, GeneFilter=TRUE, reference_name = 'hg38'){
 
   if (QC == TRUE){
     RNAmatrix <- QualityControl(RNAmatrix)
@@ -12,12 +12,13 @@ AnalyzeResult <- function(RNAmatrix, CNVmatrix, ncluster = 3, lambda1, lambda2, 
   E <- Result[[2]]
   P <- Result[[1]]
   A <- Result[[3]]
-  ResultsCCNMF <- run_CCNMF(ncluster, E, P, A, lambda1, lambda2, mu)
+  ResultsCCNMF <- run_CCNMF(ncluster, E, P, A, lambda1, lambda2)
   return(list(Result, ResultsCCNMF))
 }
 
 
 ###Find the paired dosage effect genes
+#' @import minerva
 DosageQualify <- function(CNVmatrix, RNAmatrix, CNVDE, RNADE, S1, S2, index=FALSE){
   ncluster <- max(S1)
   Dosage <- list()
@@ -52,7 +53,7 @@ DosageQualify <- function(CNVmatrix, RNAmatrix, CNVDE, RNADE, S1, S2, index=FALS
   return(Dosage)
 }
 
-
+#' @import minerva
 ComputeMIC <- function(CNVmatrix, RNAmatrix, S1, S2){
   ncluster <- max(S1)
   Dosage <- list()
@@ -76,6 +77,7 @@ ComputeMIC <- function(CNVmatrix, RNAmatrix, S1, S2){
 
 #' Differential expression for different clusters in specific clusters
 #' Selct the differential gene among clusters by t test
+#' @import stats
 #' @param Data the scRNA-seq matrix
 #' @param label the clusters label of the imput data
 #'
@@ -111,13 +113,14 @@ DiffExpCluster <- function(Data, label, i){
 
 #' Differential expression for different clusters in scRNA-seq data
 #' Selct the differential gene among clusters by t test
+#' @import stats
 #' @param Data the scRNA-seq matrix
 #' @param label the clusters label of the imput data
 #'
 #' @return P the p_values matrix, the rows correspond to the clusters, the cloumns correspond to the genes
 #' @return DEgenes, the differential genes for each clusters. the each row is the DE genes for each cluster.
 DiffExp <- function(Data, label){
-  
+
   std <- apply(Data, 1, sd)
   Data <- Data[which(std != 0), ]
   P <- matrix(0, dim(Data)[1], max(label))

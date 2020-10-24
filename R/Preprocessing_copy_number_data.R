@@ -1,28 +1,34 @@
 
-# Merge small bins to large segement
-# CNV_file: name of copy number variation file
-# bed_file: name of bed file
-# bin_size: number of #kb bins
-
-# scdna_object <- Merge_bins2segements(scdna_matrix, genome_reference, bin_size = 50)
+#' @description  Merge small bins to large segement
+#' @importFrom dplyr '%>%'
+#' @import dplyr
+#' @import stats
+#'
+#' @param  scdna_matrix: name of copy number variation file
+#' @param  genome_reference: name of bed file
+#' @param  bin_size: number of #kb bins
+#' @return list(scdna_matrix, scdna_matrix_locs) 50kb matrix and gene_locs
+#' @export
+#' @examples
+#' scdna_object <- Merge_bins2segements(scdna_matrix, genome_reference, bin_size = 50)
 Merge_bins2segements <- function(scdna_matrix, genome_reference, bin_size=50){
-  
+
   genome_reference <- genome_reference %>% group_by(chr) %>% mutate(bin=floor(row_number()/bin_size))
   genome_reference$bin_corrected <- cumsum(c(0,as.numeric(diff(genome_reference$bin))!=0))
-  
+
   scdna_matrix$chr <- genome_reference$chr
   scdna_matrix$bin <- genome_reference$bin_corrected
   scdna_matrix$start <- genome_reference$start
   scdna_matrix$end <- genome_reference$end
   scdna_matrix$index <- genome_reference$bin
-  
+
   #coarse graining
   scdna_matrix <- scdna_matrix %>% group_by(chr,bin) %>% summarise_all(list(median)) %>% filter(chr!='chrX' & chr!='chrY')
   scdna_matrix_locs <- genome_reference %>% group_by(chr,bin_corrected) %>% mutate(start=min(start)) %>% mutate(end = max(end))
   scdna_matrix_locs <- scdna_matrix_locs %>% group_by(chr, bin_corrected) %>% summarise_all(list(median))
   scdna_matrix_locs <- scdna_matrix_locs[, c('chr', 'start', 'end', 'bin')]
   scdna_matrix_locs <- scdna_matrix_locs %>% filter(chr != 'chrX' & chr != 'chrY')
-  
+
   scdna_matrix$chr <- NULL
   scdna_matrix$bin <- NULL
   scdna_matrix$start <- NULL
@@ -33,28 +39,46 @@ Merge_bins2segements <- function(scdna_matrix, genome_reference, bin_size=50){
   return(list(scdna_matrix, scdna_matrix_locs))
 }
 
-## Identify the replicating/noisy cells by computing standard deviation for cells on 50kb segemental-bins
+#' @importFrom mixtools normalmixEM
+#' @import stats
+#' @import grDevices
+#' @import ggplot2
+#'
+#' @param scdna_matrix 50kb segmental bins copy number matrix
+#' @return the index of non-replicating cells
+#'
+#' @description Identify the replicating/noisy cells by computing standard deviation for cells on 50kb segemental-bins
+#' @export
 Iden_replicating_cells <- function(scdna_matrix){
-  
+
   cells_sd <- apply(scdna_matrix, 2, sd)
   ## Model the mixture distribution and removing small group
   estimate_mix_model <- normalmixEM(cells_sd)
   index_no_Sphase <- which(estimate_mix_model$lambda == max(estimate_mix_model$lambda))
   index_label <- apply(estimate_mix_model$posterior, 1, function(x){which(x == max(x))})
   index_remain <- which(index_label == index_no_Sphase)
-  
+
   pdf('./Cell_standard_deviation_distribution.pdf')
   plot(density(cells_sd), main='Density of sd', ylab = 'Density')
   dev.off()
-  
+
   pdf('./Cell_standard_deviation_density.pdf')
   mixtools::plot.mixEM(normalmixEM(cells_sd), whichplots = 2)
   dev.off()
-  
+
   return(index_remain)
 }
 
-#Identify the signal segments by computing standard deviation for 50kb bins across cells
+#' @description Identify the signal segments by computing standard deviation for 50kb bins across cells
+#' @importFrom mixtools normalmixEM
+#' @import stats
+#' @import ggplot2
+#' @import grDevices
+#'
+#' @param scdna_matrix the 50kb-segmental bins * non-replicating cells matrix
+#' @return The index of selecting signal segments
+#'
+#' @export
 Iden_signal_segements <- function(scdna_matrix){
   scdna_matrix_no_Sphase <- scdna_matrix
   scdna_matrix_no_Sphase[is.na(scdna_matrix_no_Sphase)] <- 0
@@ -62,24 +86,24 @@ Iden_signal_segements <- function(scdna_matrix){
   pdf('./Segements_sd_distribution.pdf')
   plot(density(arm_sd), main='Density of sd', ylab = 'Density')
   dev.off()
-  
+
   pdf('./Segements_sd_density.pdf')
   mixtools::plot.mixEM(normalmixEM(arm_sd), whichplots = 2)
   dev.off()
-  
+
   estimate_mix_model <- normalmixEM(arm_sd)
   index_seg_cluster <- which(estimate_mix_model$lambda == max(estimate_mix_model$lambda))
   index_label <- apply(estimate_mix_model$posterior, 1, function(x){which(x == max(x))})
   index_segement <- which(index_label != index_seg_cluster)
-  
+
   index_segement_tmp <- index_segement
   index_seg_cluster_tmp <- index_seg_cluster
-  
+
   ## Stop select when length of selected segements is less than 20% of total
   while(length(index_segement) <= round(0.2 * dim(scdna_matrix)[1])){
-    
+
     if (length(index_segement) >= round(0.21 * dim(scdna_matrix)[1])){
-      break 
+      break
     }
     segement_index_remain <- which(index_label == index_seg_cluster_tmp)
     arm_sd_tmp <- arm_sd[segement_index_remain]
@@ -92,14 +116,22 @@ Iden_signal_segements <- function(scdna_matrix){
   return(index_segement)
 }
 
-# Select genes on signal 50kb-segemental bins  
+#' @description Select genes on signal 50kb-segemental bins
+#' @importFrom GenomicRanges GRanges
+#' @importFrom GenomicRanges findOverlaps
+#' @param scdna_matrix_locs the genome reference for segments
+#' @param index_segment the index of signal selected segments
+#' @param gene_locs the genes reference
+#' @return the names of genes on these signal segments
+#'
+#' @export
 Find_genes_on_signal_segments <- function(scdna_matrix_locs, index_segement, gene_locs){
-  
+
   segements_locs <- scdna_matrix_locs[index_segement, ]
-  gene_gr <- GRanges(seq=gene_locs$chr, ranges = IRanges(start = gene_locs$start,
-                                                                end = gene_locs$end, 
+  gene_gr <- GRanges(seqnames =gene_locs$chr, ranges = IRanges(start = gene_locs$start,
+                                                                end = gene_locs$end,
                                                                 names = gene_locs$gene))
-  segements_gr <- GRanges(seq=segements_locs$chr, ranges = IRanges(start = segements_locs$start,
+  segements_gr <- GRanges(seqnames =segements_locs$chr, ranges = IRanges(start = segements_locs$start,
                                                                    end = segements_locs$end,
                                                                    names = segements_locs$chr))
   overlaps <- findOverlaps(gene_gr, segements_gr)
@@ -108,26 +140,42 @@ Find_genes_on_signal_segments <- function(scdna_matrix_locs, index_segement, gen
   return(signal_genes)
 }
 
-# Align the bins bed file with genes bed file
+#' @description Align the bins bed file with genes bed file
+#' @importFrom GenomicRanges makeGRangesFromDataFrame
+#' @import dplyr
+#' @import GenomicRanges
+#' @import IRanges
+#' @import S4Vectors
+#' @param gene_locs the genes reference
+#' @param genome_reference the genome reference
+#' @return maping bins to one gene
+#'
+#' @export
 Align_bins_genes <- function(gene_locs, genome_reference){
- 
+
   genome_reference <- genome_reference %>% filter(chr != 'chrX' & chr != 'chrY')
   cnv_gr <- makeGRangesFromDataFrame(genome_reference, keep.extra.columns = TRUE)
   gene_gr <- makeGRangesFromDataFrame(gene_locs, keep.extra.columns = TRUE, ignore.strand = TRUE)
-  
+
   # Find the overlaps between gene and chr regions based on annotation
   olaps <- findOverlaps(gene_gr, cnv_gr)
-  
-  df_gene <- data_frame(gene = gene_locs$gene[queryHits(olaps)], 
+
+  df_gene <- data_frame(gene = gene_locs$gene[queryHits(olaps)],
                         cnv_bins = cnv_gr$bin[subjectHits(olaps)])
   unique_genes <- as.matrix(unique(df_gene$gene))
   bin_index <- apply(unique_genes, 1, function(x){df_gene$cnv_bins[which(df_gene$gene == x)]})
-  
+
   genes_bin <- data_frame(gene=unique_genes, bins = bin_index)
   return(genes_bin)
 }
 
-#Merge the bins corresponding to the same gene
+#' @description Merge the bins corresponding to the same gene
+#' @import dplyr
+#' @param scDNA The bins times cells CNV matrix
+#' @param genes_bin the list of bins index on genes
+#' @return the CNV matrix on genes
+#'
+#' @export
 Convert_scDNA_genes_matrix <- function(scDNA, genes_bin){
   scDNA <- as.matrix(scDNA)
   scDNA <- as.data.frame(scDNA[unlist(genes_bin$bins), ])

@@ -1,6 +1,23 @@
 
 #' Output the all visualization of results from CCNMF
 #' Especially, the paired heatmap of differential genes and dimension reduction for both scRNA-seq and scDNA-seq data
+#' @import ggplot2
+#' @import cowplot
+#' @import ggplotify
+#'
+#' @description Output the all visualization of results from CCNMF
+#' @importFrom Rtsne Rtsne
+#' @importFrom uwot umap
+#' @import ggplot2
+#' @import grDevices
+#'
+#' @param CNVmatrix copy number matrix
+#' @param RNAmatrix gene expression matrix
+#' @param Results_CCNMF The result of CCNMF
+#' @param DElist The list of differentiate genes
+#'
+#' @return The integrated figure
+#'
 PlotMainResult <- function(CNVmatrix, RNAmatrix, Result_CCNMF, DElist){
 
   if(is.list(DElist)){
@@ -12,7 +29,7 @@ PlotMainResult <- function(CNVmatrix, RNAmatrix, Result_CCNMF, DElist){
   DNAheat <- as.ggplot(DNAheat)
   RNAheat <- Plot_heatmap(RNAmatrix, Result_CCNMF[[6]], P, Datatype = 'RNA', title = 'Signature gene heatmap of scRNA-seq data')
   RNAheat <- as.ggplot(RNAheat)
-  
+
   H1 <- Result_CCNMF[[1]]
   H2 <- Result_CCNMF[[2]]
   S1 <- Result_CCNMF[[5]]
@@ -22,7 +39,7 @@ PlotMainResult <- function(CNVmatrix, RNAmatrix, Result_CCNMF, DElist){
 
   myplot <- plot_grid(DNAdim, RNAdim, DNAheat, RNAheat, labels = c('A', 'B', 'C', 'D'), label_size = 12, scale = c(1, 1, 0.95, 0.95))
   dev.off()
-  ggsave(file='allfigure.pdf', plot = myplot, width = 8.5, height = 6)
+  ggsave(filename ='allfigure.pdf', plot = myplot, width = 8.5, height = 6)
 }
 
 
@@ -30,12 +47,13 @@ PlotMainResult <- function(CNVmatrix, RNAmatrix, Result_CCNMF, DElist){
 #' The rows in Data matrix represent the cells, the columns represent the genes/chr bins
 #'
 #' Plot the dimensional reduction figure by PCA
-#'
+#' @import stats
 #' @param Data the orgial matrix or H matrix when the raw matrix after NMF
 #' @param label the clusters label of this figure which is the result of CCNMF
 #' @param Datatype The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'
 #'
 #' @return The pdf figure based on PCA
+#' @export
 Plotpca <- function(Data, label, title, Datatype = 'scRNA-seq'){
   pca <- prcomp(t(Data))
   myplot <- Plot(pca$x[, 1:2], as.character(label), title, 'pca 1', 'pca 2')
@@ -45,12 +63,13 @@ Plotpca <- function(Data, label, title, Datatype = 'scRNA-seq'){
 #' Plot the dimensional reduction figure by tsne
 #' Before tsne, the PCA is applied to the original Data, then select the top 15 PCs and apply
 #' tsne to these components.
-#'
+#' @import stats
 #' @param Data the orgial matrix or H matrix when the raw matrix after NMF
 #' @param label the clusters label of this figure which is the result of CCNMF
 #' @param Datatype The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'
 #'
 #' @return The pdf figure based on tsne
+#' @export
 Plottsne <- function(Data, label, title, Datatype = 'scRNA-seq', need_PCA = TRUE){
   if (need_PCA == TRUE){
     pca <- prcomp(t(Data))
@@ -68,12 +87,13 @@ Plottsne <- function(Data, label, title, Datatype = 'scRNA-seq', need_PCA = TRUE
 
 #' Plot the dimensional reduction figure by umap
 #' Firstly, we apply PCA for the high-dimensional data, then use Umap to the top 15 PCs.
-#'
+#' @import stats
 #' @param Data the orgial matrix or H matrix when the raw matrix after NMF
 #' @param label the clusters label of this figure which is the result of CCNMF
 #' @param Datatype The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'
 #'
 #' @return The pdf figure based on umap
+#' @export
 Plotumap <- function(Data, label, Datatype = 'scRNA-seq', need_PCA = TRUE){
   if (need_PCA == TRUE){
     pca <- prcomp(t(Data))
@@ -90,6 +110,7 @@ Plotumap <- function(Data, label, Datatype = 'scRNA-seq', need_PCA = TRUE){
 }
 
 #' The function of plotting figure
+#' @import ggplot2
 #' @param Data the input data which need to be plotted, which can be raw matrix or H matrix concluded by NMF
 #' @param label the clusters label
 #' @param title the title of the figure, which is a string
@@ -123,12 +144,15 @@ Plot <- function(Data, Cluster, title, labelx,  labely){
   }else if(length(unique(Cluster)) > 9){
     print("The number of clusters exceed 9, please add additional colorlabel for clusters.")
   }
-  
+
   myplot <- myplot + scale_colour_manual(values = Label_color)
   return(myplot)
 }
 
 #' Plot the heatmap for differential genes in scRNA-seq data
+#' @import RColorBrewer
+#' @import grDevices
+#' @import pheatmap
 #'
 #' @param Data scRNA-seq gene expression matrix
 #' @param label the clustering label of scRNA-seq data
