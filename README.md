@@ -11,6 +11,20 @@
 install.packages('devtools')
 devtools::install_github("XQBai/CCNMF")
 ```
+
+## Analyze gastric cancer NCI-N87 cell line
+
+* Download NCI-N87 single-cell RNA-seq data from Gene Expression Omnibus, [(GEO accession number GSE142750)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM4238683).
+
+* Download NCI-N87 single-cell DNA-seq FASTQ files from National Institute of Health’s SRA repository, [accession number PRJNA498809](https://www.ncbi.nlm.nih.gov/sra/SRX4943580[accn]). Then we utilized Cellranger-DNA pipeline to convert raw FASTQ files to copy number variants
+matrix with small non-overlaping bins times cells on the reference genome (GRCh38). The processed scDNA-seq data is available at [CCNMF/data/NCI_N87/scDNA](https://github.com/XQBai/CCNMF/tree/master/data/NCI_N87/scDNA).
+
+* The pipeline using CCNMF to analyzed paired single-cell NCI-N87 cell line datasets is aviailable at [CCNMF/example/NCI_N87_pipeline.R](https://github.com/XQBai/CCNMF/tree/master/example/NCI_N87_pipeline.R).
+
+* Gastric cancer NCI-N87 cell line data was referenced from:
+
+Noemi Andor, Billy T Lau, Claudia Catalanotti, Anuja Sathe, Matthew Kubit, Jiamin Chen, Cristina Blaj, Athena Cherry, Charles D Bangs, Susan M Grimes, Carlos J Suarez, Hanlee P Ji, Joint single cell DNA-seq and RNA-seq of gastric cancer cell lines reveals rules of in vitro evolution, NAR Genomics and Bioinformatics, Volume 2, Issue 2, June 2020, lqaa016, https://doi.org/10.1093/nargab/lqaa016
+
 ## Examples
 ### An example of paired scDNA and scRNA simulation:
 
