@@ -1,11 +1,52 @@
 Package: CCNMF
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: CCNMF: A Coupled-Clone Nonnegative Matrix Factorization Method for Integrating Tumor Single-Cell RNA and DNA Sequencing Data
+Version: 1.1.0
+Author: person("Xiangqi", "Bai", email = "xqbai@amss.ac.cn", role = c("aut", "cre"))
+Maintainer: The package maintainer <xqbai@amss.ac.cn>
+Description: CCNMF joinly cluster the single-cell RNA-seq and single-cell DNA-seq from the same cancer by NMF. Then the ientified clones of copy number varients in scDNA-seq can be corresoponded to the subpopulations of gene expression in scRNA-seq.
+Depends: R (>= 3.6.0)
+License: file LICENSE
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.1.1
+Imports:
+  methods,
+  Matrix,
+  NMF (>= 0.21.0),
+  ggplot2 (>= 3.2.1),
+  ComplexHeatmap,
+  GenomicRanges,
+  RColorBrewer,
+  RcppHungarian,
+  Rtsne,
+  circlize,
+  dplyr,
+  mixtools,
+  preprocessCore,
+  uwot,
+  Seurat,
+  Hmisc,
+  cowplot,
+  data.table,
+  ggplotify,
+  minerva,
+  IRanges,
+  TxDb.Hsapiens.UCSC.hg19.knownGene,
+  TxDb.Hsapiens.UCSC.hg38.knownGene,
+  org.Hs.eg.db,
+  stringr,
+  heatmaply,
+  pheatmap,
+  tidyr,
+  S4Vectors,
+  grid
+Suggests:
+  devtools,
+  readxl,
+  tibble,
+  plyr,
+  gplots,
+  shiny
+
+
