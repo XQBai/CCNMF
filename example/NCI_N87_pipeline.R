@@ -1,8 +1,13 @@
 library(CCNMF)
+library(data.table)
+library(dplyr)
+library(ggplot2)
 
-setwd('/Users/xiangqi/Github/CCNMF/example')
 
-path <- '/Users/xiangqi/Github/CCNMF/data/'
+setwd('./CCNMF/example')
+
+path <- './CCNMF/data'
+
 # Input data 
 scDNA <- fread(file.path(path, 'NCI_N87/scDNA/NCI_N87.tsv'))
 scDNA_barcode <- read.table(file.path(path, 'NCI_N87/scDNA/NCI-N87_cell_barcodes.txt'))
@@ -53,10 +58,11 @@ saveRDS(RNAmatrix_input, file='./RNAmatrix_input.rds')
 
 ### Run CCNMF.R
 ncluster = 2
-ResultsCCNMF <- Integrate_CCNMF(CNVmatrix_input, RNAmatrix_input, ncluster)
+ResultsCCNMF <- Integrate_CCNMF(CNVmatrix_input, RNAmatrix_input, ncluster, initial_parameters = 'same-order', 
+                                initial_coupling = 'default')
 
-### Section4: Plot the subclones heatmap for CNV data
-PLot_CNV_subclone_heatmap(scDNA_genes_matrix, S1, gene_locs, index_remain_cells)
+### Plot the subclones heatmap for CNV data
+PLot_CNV_subclone_heatmap(scDNA_genes_matrix, ResultsCCNMF[[5]], gene_locs, index_remain_cells)
 
   
   
