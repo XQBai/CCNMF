@@ -7,6 +7,7 @@
 #' @param file_matrix the name of the gene counts matrix. Default is 'matrix.mtx'
 #'
 #' @return The inputed gene expression matrix in which rows are cells, columns are genes.
+#' @export
 
 InputRNA <- function(pathRNA, file_gene = 'genes.tsv', file_barcodes = 'barcodes.tsv', file_matrix = 'matrix.mtx'){
 
@@ -28,7 +29,7 @@ InputRNA <- function(pathRNA, file_gene = 'genes.tsv', file_barcodes = 'barcodes
 #' Input the copy number copy in scDNA-seq data, which is a csv file.
 #' @param pathDNA the path of the CNV file located
 #' @param file_CNV the name of the CNV file. csv file is suggested.
-#' @param Verbose=TRUE the CNV files is cnvcalls of cellrangers: Otherwise, the Verbose is FALSE when the cnv file is .csv file as the format of example data.
+#' @param Verbose the CNV files is cnvcalls of cellrangers: Otherwise, the Verbose is FALSE when the cnv file is .csv file as the format of example data.
 #'
 #' @return The CNV matrix in which the first four rows are "chr", "start", "end", "width". The rest of the rows are
 #' the single cell samples.
@@ -54,7 +55,8 @@ InputDNA <- function(pathDNA, file_CNV, Verbose = TRUE){
   CNVmatrix
 }
 
-#' Convert the 10X cnv data to the input of CCNMF
+#' @description Convert the 10X cnv data to the input of CCNMF
+#' @param chromosome
 Handle_string <- function(Chr){
 
   chr <- matrix(0, nrow = length(Chr), ncol=1)
@@ -84,7 +86,7 @@ Handle_string <- function(Chr){
 
 #' Quality control the cells in scRNA-seq matrix
 #'
-#' @param The gene expression matrix of scRNA-seq
+#' @param RNAmatrix The gene expression matrix of scRNA-seq
 #' @return The number of cells will be less
 QualityControl <- function(RNAmatrix){
   cells <- apply(RNAmatrix, 2, function(x){
@@ -121,6 +123,7 @@ gene_filter <- function(RNAmatrix){
 #' @import stringr
 #' @import tidyr
 #' @import S4Vectors
+#' @importFrom rlang .data
 #'
 #' @param RNAmatrix the gene expression matrix which is a matrix file
 #' @param CNVmatrix the copy number varients matrix which is a dataframe file
@@ -131,6 +134,8 @@ gene_filter <- function(RNAmatrix){
 #'  cnv regions in CNVmatrix_match.
 Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19'){
 
+  utils::globalVariables(c('TxDb.Mmusculus.UCSC.mm9.knownGene', 'TxDb.Mmusculus.UCSC.mm9.knownGene',
+                           'entrezgene', 'ensembl_gene_id'))
   if(reference_name == 'hg19'){
     txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
   } else if(reference_name == 'hg38'){
@@ -193,8 +198,10 @@ Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19
 }
 
 #' Preprocessed scRNA matrix by Seurat including Normalization, scaling and selcting high variable genes.
-#' Input the path where the 10X RNA-seq located
+#' @description Input the path where the 10X RNA-seq located
 #' @import Seurat
+#' @param pathRNA the folder of scRNA-seq
+#'
 process_RNA_matrix <- function(pathRNA){
 
   RNAdata <- Read10X(data.dir = pathRNA)
@@ -209,6 +216,8 @@ process_RNA_matrix <- function(pathRNA){
 
 #'
 #' @import data.table
+#' @param pathRNA the folder of RNA
+#' @param RNAobject the seurat object of RNA
 #'
 AlignRNAgenes <- function(pathRNA, RNAobject){
   Gene <- read.table(file.path(pathRNA, 'genes.tsv'))
@@ -218,9 +227,10 @@ AlignRNAgenes <- function(pathRNA, RNAobject){
   return(RNAscale)
 }
 
-# find corresponding Hug genes and Ens genes
-# If the index is TRUE, means translate hug genes to Ens genes
-# If the index is FALSE, means translate Ens to Hug.
+#' @description find corresponding Hug genes and Ens genes
+#' @param inputgene input genes
+#' @param Gene the genes
+#' @param Logic If the index is TRUE, means translate hug genes to Ens genes. If the index is FALSE, means translate Ens to Hug.
 ConvertGenenames <- function(inputgene, Gene, Logic=TRUE){
   index <- matrix(0, 1, length(inputgene))
   if (Logic == TRUE){
@@ -236,9 +246,12 @@ ConvertGenenames <- function(inputgene, Gene, Logic=TRUE){
   return(Genename)
 }
 
-#' Preprocessing single-cell RNA-seq data by Seurat including normalization, scale, select high
-#' variable features.
+#' @description  Preprocessing single-cell RNA-seq data by Seurat including normalization, scale, select high variable features.
 #' @import Seurat
+#' @param RNAdata gene expression data
+#' @param min.cells the number of cells
+#' @param min.features the number of genes
+#'
 run_Seurat_RNA <- function(RNAdata, min.cells = 6, min.features = 0){
   #RNAdata <- Read10X(data.dir = path)
   RNAobject <- CreateSeuratObject(counts = RNAdata, project = 'RNAobject', min.cells = min.cells, min.features = min.features)

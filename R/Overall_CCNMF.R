@@ -8,10 +8,12 @@
 #' @param initial_coupling set up coupling matrix
 #' @param CoupledMatrix the user-defined coupled matrix
 #' @return list of results
+#' @export
 
 Integrate_CCNMF <- function(CNVmatrix_input, RNAmatrix_input, ncluster, initial_parameters = c('hyper-parameter', 'same-order', 'user-defined'), lambda1 = 1, lambda2 = 2,
                             initial_coupling = c('default', 'user-defined'), CoupledMatrix = matrix(1, 100, 100)){
 
+  utils::globalVariables(c('ncluster'))
   # Remove all 0 rows in CNVmatrix and RNAmatrix
   label_mean1 <- apply(CNVmatrix_input, 1, mean)
   index_mean1 <- which(label_mean1 != 0)

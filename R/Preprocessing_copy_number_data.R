@@ -1,6 +1,5 @@
 
 #' @description  Merge small bins to large segement
-#' @importFrom dplyr '%>%'
 #' @import dplyr
 #' @import stats
 #'
@@ -23,8 +22,8 @@ Merge_bins2segements <- function(scdna_matrix, genome_reference, bin_size=50){
   scdna_matrix$index <- genome_reference$bin
 
   #coarse graining
-  scdna_matrix <- scdna_matrix %>% group_by(chr,bin) %>% summarise_all(list(median)) %>% filter(chr!='chrX' & chr!='chrY')
-  scdna_matrix_locs <- genome_reference %>% group_by(chr,bin_corrected) %>% mutate(start=min(start)) %>% mutate(end = max(end))
+  scdna_matrix <- scdna_matrix %>% group_by(chr, bin) %>% summarise_all(list(median)) %>% filter(chr!='chrX' & chr!='chrY')
+  scdna_matrix_locs <- genome_reference %>% group_by(chr, bin_corrected) %>% mutate(start=min(start)) %>% mutate(end = max(end))
   scdna_matrix_locs <- scdna_matrix_locs %>% group_by(chr, bin_corrected) %>% summarise_all(list(median))
   scdna_matrix_locs <- scdna_matrix_locs[, c('chr', 'start', 'end', 'bin')]
   scdna_matrix_locs <- scdna_matrix_locs %>% filter(chr != 'chrX' & chr != 'chrY')
@@ -142,6 +141,7 @@ Find_genes_on_signal_segments <- function(scdna_matrix_locs, index_segement, gen
 
 #' @description Align the bins bed file with genes bed file
 #' @importFrom GenomicRanges makeGRangesFromDataFrame
+#' @importFrom rlang .data
 #' @import dplyr
 #' @import GenomicRanges
 #' @import IRanges
@@ -153,7 +153,7 @@ Find_genes_on_signal_segments <- function(scdna_matrix_locs, index_segement, gen
 #' @export
 Align_bins_genes <- function(gene_locs, genome_reference){
 
-  genome_reference <- genome_reference %>% filter(chr != 'chrX' & chr != 'chrY')
+  genome_reference <- genome_reference %>% filter(.data$chr != 'chrX' & .data$chr != 'chrY')
   cnv_gr <- makeGRangesFromDataFrame(genome_reference, keep.extra.columns = TRUE)
   gene_gr <- makeGRangesFromDataFrame(gene_locs, keep.extra.columns = TRUE, ignore.strand = TRUE)
 
@@ -171,6 +171,7 @@ Align_bins_genes <- function(gene_locs, genome_reference){
 
 #' @description Merge the bins corresponding to the same gene
 #' @import dplyr
+#' @importFrom rlang .data
 #' @param scDNA The bins times cells CNV matrix
 #' @param genes_bin the list of bins index on genes
 #' @return the CNV matrix on genes
@@ -182,7 +183,7 @@ Convert_scDNA_genes_matrix <- function(scDNA, genes_bin){
   tmp_sizes <- lapply(genes_bin$bins,function(x){length(x)})
   bin_index <- rep(1:length(tmp_sizes), unlist(tmp_sizes))
   scDNA$index <- bin_index
-  scDNA <- scDNA %>% group_by(index) %>% summarise_all(list(mean), na.rm=T)
+  scDNA <- scDNA %>% group_by(.data$index) %>% summarise_all(list(mean), na.rm=T)
   scDNA$index <- NULL
   saveRDS(scDNA, file='./scDNA_genes_matrix.rds')
   return(scDNA)

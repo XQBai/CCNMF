@@ -1,6 +1,17 @@
 
-# Initialize the parameters lambda1 and lambda2 by hyper-parameter alpha and beta
+#' @description Initialize the parameters lambda1 and lambda2 by hyper-parameter alpha and beta
+#' @param CNVmatrix the copy number matrix
+#' @param W10 W matrix of CNV's NMF
+#' @param H10 H matrix of CNV's NMF
+#' @param RNAmatrix gene expression matrix
+#' @param W20 W matrix of RNA NMF
+#' @param H20 H matrix of RNA's NMF
+#' @param CoupledMatrix coupled Matrix
+#' @param beta hyper-parmater
+#' @param alpha hyper-parmater
+#' @export
 default_parameters_hyper <- function(CNVmatrix, W10, H10, RNAmatrix, W20, H20, CoupledMatrix, beta, alpha){
+
   eps <- exp(-10)
   A <- CoupledMatrix
   if (is.null(beta) & is.null(alpha)){
@@ -22,8 +33,18 @@ default_parameters_hyper <- function(CNVmatrix, W10, H10, RNAmatrix, W20, H20, C
   return(par)
 }
 
-# Initialize the parameters lambda1 and lambda2 by seting the items in object function in the same order
-
+#' @description Initialize the parameters lambda1 and lambda2 by seting the items in object function in the same order
+#' @param CNVmatrix the copy number matrix
+#' @param W10 W matrix of CNV's NMF
+#' @param H10 H matrix of CNV's NMF
+#' @param RNAmatrix gene expression matrix
+#' @param W20 W matrix of RNA NMF
+#' @param H20 H matrix of RNA's NMF
+#' @param CoupledMatrix coupled Matrix
+#' @param beta hyper-parmater
+#' @param alpha hyper-parmater
+#' @export
+#'
 default_parameters_order <- function(CNVmatrix,W10, H10, RNAmatrix, W20, H20, CoupledMatrix){
 
   E <- RNAmatrix
@@ -31,6 +52,8 @@ default_parameters_order <- function(CNVmatrix,W10, H10, RNAmatrix, W20, H20, Co
   A <- CoupledMatrix
 
   lambda1 <- norm((E - W20 %*% H20), type <- 'F')**2 / norm((O-W10 %*% H10), type <- 'F')**2
+  ncluster <- dim(W10)[2]
+
   # Normalize the W10 and W20
   m1 <- matrix(0, nrow <- ncluster, ncol <- ncluster)
   m2 <- matrix(0, nrow <- ncluster, ncol <- ncluster)

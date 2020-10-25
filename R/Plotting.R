@@ -13,7 +13,7 @@
 #'
 #' @param CNVmatrix copy number matrix
 #' @param RNAmatrix gene expression matrix
-#' @param Results_CCNMF The result of CCNMF
+#' @param Result_CCNMF The result of CCNMF
 #' @param DElist The list of differentiate genes
 #'
 #' @return The integrated figure
@@ -51,6 +51,8 @@ PlotMainResult <- function(CNVmatrix, RNAmatrix, Result_CCNMF, DElist){
 #' @param Data the orgial matrix or H matrix when the raw matrix after NMF
 #' @param label the clusters label of this figure which is the result of CCNMF
 #' @param Datatype The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'
+#' @param title the title of the figure
+#' @param need_PCA logic
 #'
 #' @return The pdf figure based on PCA
 #' @export
@@ -67,6 +69,8 @@ Plotpca <- function(Data, label, title, Datatype = 'scRNA-seq'){
 #' @param Data the orgial matrix or H matrix when the raw matrix after NMF
 #' @param label the clusters label of this figure which is the result of CCNMF
 #' @param Datatype The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'
+#' @param title the title of the figure
+#' @param need_PCA logic
 #'
 #' @return The pdf figure based on tsne
 #' @export
@@ -91,6 +95,7 @@ Plottsne <- function(Data, label, title, Datatype = 'scRNA-seq', need_PCA = TRUE
 #' @param Data the orgial matrix or H matrix when the raw matrix after NMF
 #' @param label the clusters label of this figure which is the result of CCNMF
 #' @param Datatype The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'
+#' @param need_PCA Logic
 #'
 #' @return The pdf figure based on umap
 #' @export
@@ -112,11 +117,10 @@ Plotumap <- function(Data, label, Datatype = 'scRNA-seq', need_PCA = TRUE){
 #' The function of plotting figure
 #' @import ggplot2
 #' @param Data the input data which need to be plotted, which can be raw matrix or H matrix concluded by NMF
-#' @param label the clusters label
+#' @param Cluster the clusters label
 #' @param title the title of the figure, which is a string
 #' @param labelx X-coordinate of name, such as 'pca 1', 'tsne 1', 'umap 1'
 #' @param labely Y-coordinate of name, such as 'pca 2', 'tsne 2', 'umap 2'
-#' @param savefig the name of the pdf file, such as "figure.pdf"
 #'
 #' @return A pdf file
 Plot <- function(Data, Cluster, title, labelx,  labely){
@@ -124,7 +128,7 @@ Plot <- function(Data, Cluster, title, labelx,  labely){
   colnames(Data) <- c('V1', 'V2')
   ncluster <- max(Cluster)
   Clones <- paste0('C', Cluster, sep='')
-  myplot <- ggplot(data = Data, aes(x = V1, y=V2, color = Clones)) +
+  myplot <- ggplot(data = Data, aes_string(x = V1, y=V2, color = Clones)) +
     geom_point(size = 1) +
     labs(title= title, x = labelx, y= labely, fill = 'Clones') +
     scale_fill_discrete(name='Clones') +
@@ -156,6 +160,7 @@ Plot <- function(Data, Cluster, title, labelx,  labely){
 #'
 #' @param Data scRNA-seq gene expression matrix
 #' @param label the clustering label of scRNA-seq data
+#' @param Datatype scDNAseq or scRNA-seq
 #' @param P the p_values matrix by t test the DE genes among clusters in scRNA-seq data
 #' @param title a string, default as 'The heatmap of differential expression in scRNA-seq data
 #'

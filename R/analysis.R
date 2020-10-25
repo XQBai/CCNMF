@@ -1,5 +1,14 @@
 
-#' Analysis the results of CCNMF
+#' @description Analysis the results of CCNMF
+#' @param RNAmatrix gene expression matrix
+#' @param CNVmatrix copy number matrix
+#' @param ncluster the number of clusters
+#' @param lambda1 paramaters
+#' @param lambda2 paramaters
+#' @param QC Logic
+#' @param GeneFilter Logic
+#' @param reference_name name of reference
+#'
 AnalyzeResult <- function(RNAmatrix, CNVmatrix, ncluster = 3, lambda1, lambda2, QC = TRUE, GeneFilter=TRUE, reference_name = 'hg38'){
 
   if (QC == TRUE){
@@ -17,8 +26,16 @@ AnalyzeResult <- function(RNAmatrix, CNVmatrix, ncluster = 3, lambda1, lambda2, 
 }
 
 
-###Find the paired dosage effect genes
+#' @description Find the paired dosage effect genes
 #' @import minerva
+#' @param CNVmatrix copy number matrix
+#' @param RNAmatrix gene expression matrix
+#' @param CNVDE differenitial expressed genes
+#' @param RNADE differential expressed genes
+#' @param S1 clustering labels of DNA
+#' @param S2 clustering labels of RNA
+#' @param index logic
+#'
 DosageQualify <- function(CNVmatrix, RNAmatrix, CNVDE, RNADE, S1, S2, index=FALSE){
   ncluster <- max(S1)
   Dosage <- list()
@@ -54,6 +71,10 @@ DosageQualify <- function(CNVmatrix, RNAmatrix, CNVDE, RNADE, S1, S2, index=FALS
 }
 
 #' @import minerva
+#' @param CNVmatrix copy number matrix
+#' @param RNAmatrix gene expression matrix
+#' @param S1 clustering labels of DNA
+#' @param S2 clustering labels of RNA
 ComputeMIC <- function(CNVmatrix, RNAmatrix, S1, S2){
   ncluster <- max(S1)
   Dosage <- list()
@@ -80,6 +101,7 @@ ComputeMIC <- function(CNVmatrix, RNAmatrix, S1, S2){
 #' @import stats
 #' @param Data the scRNA-seq matrix
 #' @param label the clusters label of the imput data
+#' @param i the i-th cluster
 #'
 #' @return P the p_values matrix, the rows correspond to the clusters, the cloumns correspond to the genes
 #' @return DEgenes, the differential genes for each clusters. the each row is the DE genes for each cluster.
@@ -141,7 +163,9 @@ DiffExp <- function(Data, label){
   return(list(P, genesnames, DEgenes))
 }
 
-#' Find high variable genes for each cluster by vst
+#' @description Find high variable genes for each cluster by vst
+#' @param Data the scRNA-seq matrix
+#' @param label the clusters label of the imput data
 #'
 FindHighVar <- function(Data, label, number){
   HighVar <- matrix(0, number, max(label))
