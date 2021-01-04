@@ -29,7 +29,7 @@ gene_locs <- gene_locs %>% filter(chr != 'X' & chr != 'Y')
 gene_locs$chr <- paste0('chr', gene_locs$chr)
 
 # Select genes on signal 50kb-segemental bins
-index_signal_segement <- Iden_signal_segements(scdna_object[[1]][,index_remain_cells])
+index_signal_segement <- Iden_signal_segments(scdna_object[[1]][,index_remain_cells])
 selected_scDNA_genes <- Find_genes_on_signal_segments(scdna_object[[2]], index_signal_segement, gene_locs)
 
 # Align the bins bed file with genes bed file

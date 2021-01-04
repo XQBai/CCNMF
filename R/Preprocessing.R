@@ -151,7 +151,7 @@ Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19
   }
 
   # load the corresponding gene annotations
-  g <- genes(txdb, single.strand.genes.only = FALSE)
+  g <- GenomicFeatures::genes(txdb, single.strand.genes.only = FALSE)
   # Convert 1, 2, 3... to chr1, chr2, chr3...
   df_CNV <- dplyr::mutate(CNVmatrix, chr = paste0("chr", chr))
   # Convert g to a GRanges object
@@ -159,8 +159,8 @@ Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19
   # Find overlaps between gene and region based annotation
   olaps <- IRanges::findOverlaps(g, cnv_gr)
   #Convert this into a gene and copy number data frame
-  cell_names <- names(mcols(cnv_gr)@listData)
-  df_gene <- dplyr::data_frame(entrezgene = names(g)[queryHits(olaps)])
+  cell_names <- base::names(mcols(cnv_gr)@listData)
+  df_gene <- tibble::data_frame(entrezgene = names(g)[queryHits(olaps)])
   for (i in 1:length(cell_names)){
     r <- as.data.frame(mcols(cnv_gr)@listData[i])[subjectHits(olaps),]
     r <- as.data.frame(r)
@@ -172,7 +172,7 @@ Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19
   entrezgene_ensembl_map <- as.list(org.Hs.egENSEMBL)
 
   entrezgene_ensembl_map <- lapply(entrezgene_ensembl_map, `[`, 1)
-  df_gene <- dplyr::filter(df_gene, entrezgene %in% names(entrezgene_ensembl_map)) %>%
+  df_gene <- dplyr::filter(df_gene, entrezgene %in% base::names(entrezgene_ensembl_map)) %>%
     dplyr::mutate(ensembl_gene_id = unlist(entrezgene_ensembl_map[entrezgene])) %>%
     dplyr::select(ensembl_gene_id, colnames(df_gene)) %>%
     drop_na()

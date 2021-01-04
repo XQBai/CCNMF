@@ -11,7 +11,7 @@
 #'
 #' @export
 Integrate_CCNMF <- function(CNVmatrix_input, RNAmatrix_input, ncluster, initial_parameters = c('hyper-parameter', 'same-order', 'user-defined'), lambda1 = 1, lambda2 = 2,
-                            initial_coupling = c('default', 'user-defined'), CoupledMatrix = matrix(1, 100, 100)){
+                            initial_coupling = c('default', 'user-defined'), CoupledMatrix = NULL){
 
   #utils::globalVariables(c('ncluster'))
   # Remove all 0 rows in CNVmatrix and RNAmatrix
@@ -60,8 +60,8 @@ Integrate_CCNMF <- function(CNVmatrix_input, RNAmatrix_input, ncluster, initial_
     lambda2 <- lambda2
   }
 
-  # print('lambda1:'lambda1)
-  # print('lambda2:'lambda2)
+  print(paste0('lambda1:', lambda1))
+  print(paste0('lambda2:', lambda2))
 
   ResultsCCNMF <- run_CCNMF(ncluster, RNAmatrix_input, CNVmatrix_input, CoupledMatrix, lambda1, lambda2)
 

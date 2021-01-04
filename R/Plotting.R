@@ -129,7 +129,7 @@ Plot <- function(Data, Cluster, title, labelx,  labely){
   colnames(Data) <- c('V1', 'V2')
   ncluster <- max(Cluster)
   Clones <- paste0('C', Cluster, sep='')
-  myplot <- ggplot(data = Data, aes_string(x = V1, y=V2, color = Clones)) +
+  myplot <- ggplot(data = Data, ggplot2::aes(x = V1, y=V2, color = Clones)) +
     geom_point(size = 1) +
     labs(title= title, x = labelx, y= labely, fill = 'Clones') +
     scale_fill_discrete(name='Clones') +

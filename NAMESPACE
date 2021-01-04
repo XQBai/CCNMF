@@ -1,1 +1,6 @@
 exportPattern("^[[:alpha:]]+")
+importFrom("grDevices", "colorRampPalette", "dev.off", "pdf")
+     importFrom("graphics", "plot")
+     importFrom("methods", "is")
+     importFrom("stats", "density", "dist", "end", "median", "prcomp", "sd",
+                "start", "t.test", "var")
