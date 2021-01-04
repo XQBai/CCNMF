@@ -9,6 +9,7 @@
 #' @param GeneFilter Logic
 #' @param reference_name name of reference
 #'
+#' @export
 AnalyzeResult <- function(RNAmatrix, CNVmatrix, ncluster = 3, lambda1, lambda2, QC = TRUE, GeneFilter=TRUE, reference_name = 'hg38'){
 
   if (QC == TRUE){
@@ -36,6 +37,7 @@ AnalyzeResult <- function(RNAmatrix, CNVmatrix, ncluster = 3, lambda1, lambda2, 
 #' @param S2 clustering labels of RNA
 #' @param index logic
 #'
+#' @export
 DosageQualify <- function(CNVmatrix, RNAmatrix, CNVDE, RNADE, S1, S2, index=FALSE){
   ncluster <- max(S1)
   Dosage <- list()
@@ -75,6 +77,7 @@ DosageQualify <- function(CNVmatrix, RNAmatrix, CNVDE, RNADE, S1, S2, index=FALS
 #' @param RNAmatrix gene expression matrix
 #' @param S1 clustering labels of DNA
 #' @param S2 clustering labels of RNA
+#' @export
 ComputeMIC <- function(CNVmatrix, RNAmatrix, S1, S2){
   ncluster <- max(S1)
   Dosage <- list()
@@ -105,6 +108,7 @@ ComputeMIC <- function(CNVmatrix, RNAmatrix, S1, S2){
 #'
 #' @return P the p_values matrix, the rows correspond to the clusters, the cloumns correspond to the genes
 #' @return DEgenes, the differential genes for each clusters. the each row is the DE genes for each cluster.
+#' @export
 DiffExpCluster <- function(Data, label, i){
 
   P <- matrix(0, dim(Data)[1], max(label))
@@ -141,6 +145,7 @@ DiffExpCluster <- function(Data, label, i){
 #'
 #' @return P the p_values matrix, the rows correspond to the clusters, the cloumns correspond to the genes
 #' @return DEgenes, the differential genes for each clusters. the each row is the DE genes for each cluster.
+#' @export
 DiffExp <- function(Data, label){
 
   std <- apply(Data, 1, sd)
@@ -166,7 +171,7 @@ DiffExp <- function(Data, label){
 #' @description Find high variable genes for each cluster by vst
 #' @param Data the scRNA-seq matrix
 #' @param label the clusters label of the imput data
-#'
+#' @export
 FindHighVar <- function(Data, label, number){
   HighVar <- matrix(0, number, max(label))
   for (j in 1:max(label)){

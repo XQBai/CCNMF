@@ -17,7 +17,7 @@
 #' @param DElist The list of differentiate genes
 #'
 #' @return The integrated figure
-#'
+#' @export
 PlotMainResult <- function(CNVmatrix, RNAmatrix, Result_CCNMF, DElist){
 
   if(is.list(DElist)){
@@ -123,6 +123,7 @@ Plotumap <- function(Data, label, Datatype = 'scRNA-seq', need_PCA = TRUE){
 #' @param labely Y-coordinate of name, such as 'pca 2', 'tsne 2', 'umap 2'
 #'
 #' @return A pdf file
+#' @export
 Plot <- function(Data, Cluster, title, labelx,  labely){
   Data <- as.data.frame(Data)
   colnames(Data) <- c('V1', 'V2')
@@ -166,6 +167,7 @@ Plot <- function(Data, Cluster, title, labelx,  labely){
 #'
 #' @return D_assign: a matrix that rows are the clusters and cloumns are the DE genes of all clusters
 #' @return A pdf file which is the heatmap figure
+#' @export
 Plot_heatmap <- function(Data, label, P, Datatype = 'DNA', title = 'The heatmap of differential expression in scRNA-seq data'){
 
   # if input P is a dataframe, which means the p-values for each cluster

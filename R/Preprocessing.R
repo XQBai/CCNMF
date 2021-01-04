@@ -8,7 +8,6 @@
 #'
 #' @return The inputed gene expression matrix in which rows are cells, columns are genes.
 #' @export
-
 InputRNA <- function(pathRNA, file_gene = 'genes.tsv', file_barcodes = 'barcodes.tsv', file_matrix = 'matrix.mtx'){
 
   # Parse gene expression data first
@@ -33,7 +32,7 @@ InputRNA <- function(pathRNA, file_gene = 'genes.tsv', file_barcodes = 'barcodes
 #'
 #' @return The CNV matrix in which the first four rows are "chr", "start", "end", "width". The rest of the rows are
 #' the single cell samples.
-
+#' @export
 InputDNA <- function(pathDNA, file_CNV, Verbose = TRUE){
   if(Verbose == FALSE & is(pathDNA, 'character') & is(file_CNV, 'character')){
     CNVmatrix <- read.csv(file.path(pathDNA, file_CNV))
@@ -57,6 +56,7 @@ InputDNA <- function(pathDNA, file_CNV, Verbose = TRUE){
 
 #' @description Convert the 10X cnv data to the input of CCNMF
 #' @param chromosome
+#' @export
 Handle_string <- function(Chr){
 
   chr <- matrix(0, nrow = length(Chr), ncol=1)
@@ -88,6 +88,7 @@ Handle_string <- function(Chr){
 #'
 #' @param RNAmatrix The gene expression matrix of scRNA-seq
 #' @return The number of cells will be less
+#' @export
 QualityControl <- function(RNAmatrix){
   cells <- apply(RNAmatrix, 2, function(x){
     sum(x >= 1) >= 2000
@@ -100,6 +101,7 @@ QualityControl <- function(RNAmatrix){
 #'
 #' @param RNAmatrix The gene expression matrix of scRNA-seq
 #' @return The filtered gene expression
+#' @export
 gene_filter <- function(RNAmatrix){
   Filter <- apply(RNAmatrix, 1, function(x){
     sum(x > 1) > round(dim(RNAmatrix)[2]*0.1)
@@ -132,6 +134,7 @@ gene_filter <- function(RNAmatrix){
 #' @return RNAmatrix_match in which the number of genes equals to the number of cnv regions in
 #'  CNVmatrix_match. More details, the genes in RNAmatrix_match is one-to-one correspondence with the
 #'  cnv regions in CNVmatrix_match.
+#'  @export
 Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19'){
 
   utils::globalVariables(c('TxDb.Mmusculus.UCSC.mm9.knownGene', 'TxDb.Mmusculus.UCSC.mm9.knownGene',
@@ -201,7 +204,7 @@ Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19
 #' @description Input the path where the 10X RNA-seq located
 #' @import Seurat
 #' @param pathRNA the folder of scRNA-seq
-#'
+#' @export
 process_RNA_matrix <- function(pathRNA){
 
   RNAdata <- Read10X(data.dir = pathRNA)
@@ -218,7 +221,7 @@ process_RNA_matrix <- function(pathRNA){
 #' @import data.table
 #' @param pathRNA the folder of RNA
 #' @param RNAobject the seurat object of RNA
-#'
+#' @export
 AlignRNAgenes <- function(pathRNA, RNAobject){
   Gene <- read.table(file.path(pathRNA, 'genes.tsv'))
   RNAscale <- RNAobject@assays$RNA@scale.data[RNAobject@assays$RNA@var.features, ]
@@ -231,6 +234,7 @@ AlignRNAgenes <- function(pathRNA, RNAobject){
 #' @param inputgene input genes
 #' @param Gene the genes
 #' @param Logic If the index is TRUE, means translate hug genes to Ens genes. If the index is FALSE, means translate Ens to Hug.
+#' @export
 ConvertGenenames <- function(inputgene, Gene, Logic=TRUE){
   index <- matrix(0, 1, length(inputgene))
   if (Logic == TRUE){
@@ -251,7 +255,7 @@ ConvertGenenames <- function(inputgene, Gene, Logic=TRUE){
 #' @param RNAdata gene expression data
 #' @param min.cells the number of cells
 #' @param min.features the number of genes
-#'
+#' @export
 run_Seurat_RNA <- function(RNAdata, min.cells = 6, min.features = 0){
   #RNAdata <- Read10X(data.dir = path)
   RNAobject <- CreateSeuratObject(counts = RNAdata, project = 'RNAobject', min.cells = min.cells, min.features = min.features)

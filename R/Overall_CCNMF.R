@@ -8,12 +8,12 @@
 #' @param initial_coupling set up coupling matrix
 #' @param CoupledMatrix the user-defined coupled matrix
 #' @return list of results
+#'
 #' @export
-
 Integrate_CCNMF <- function(CNVmatrix_input, RNAmatrix_input, ncluster, initial_parameters = c('hyper-parameter', 'same-order', 'user-defined'), lambda1 = 1, lambda2 = 2,
                             initial_coupling = c('default', 'user-defined'), CoupledMatrix = matrix(1, 100, 100)){
 
-  utils::globalVariables(c('ncluster'))
+  #utils::globalVariables(c('ncluster'))
   # Remove all 0 rows in CNVmatrix and RNAmatrix
   label_mean1 <- apply(CNVmatrix_input, 1, mean)
   index_mean1 <- which(label_mean1 != 0)
@@ -34,22 +34,22 @@ Integrate_CCNMF <- function(CNVmatrix_input, RNAmatrix_input, ncluster, initial_
   # Initialize lambda1 and lambda2 by seting the items in object function in the same order
   if(initial_parameters == 'hyper-parameter'){
     # Run NMF on scDNA matrix and scRNA matrix respectively, cost much time for large matrix
-    resCNV <- nmf(CNVmatrix_input, ncluster)
+    resCNV <- NMF::nmf(CNVmatrix_input, ncluster)
     W10 <- resCNV@fit@W
     H10 <- resCNV@fit@H
 
-    resRNA <- nmf(RNAmatrix_input, ncluster)
+    resRNA <- NMF::nmf(RNAmatrix_input, ncluster)
     W20 <- resRNA@fit@W
     H20 <- resRNA@fit@H
     par <- default_parameters_hyper(CNVmatrix_input, W10, H10, RNAmatrix_input, W20, H20, CoupledMatrix)
     lambda1 <- par[1]
     lambda2 <- par[2]
   }else if(initial_parameters == 'same-order'){
-    resCNV <- nmf(CNVmatrix_input, ncluster)
+    resCNV <- NMF::nmf(CNVmatrix_input, ncluster)
     W10 <- resCNV@fit@W
     H10 <- resCNV@fit@H
 
-    resRNA <- nmf(RNAmatrix_input, ncluster)
+    resRNA <- NMF::nmf(RNAmatrix_input, ncluster)
     W20 <- resRNA@fit@W
     H20 <- resRNA@fit@H
     par <- default_parameters_order(CNVmatrix_input, W10, H10, RNAmatrix_input, W20, H20, CoupledMatrix)

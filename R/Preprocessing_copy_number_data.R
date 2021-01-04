@@ -9,10 +9,10 @@
 #' @return list(scdna_matrix, scdna_matrix_locs) 50kb matrix and gene_locs
 #' @export
 #' @examples
-#' scdna_object <- Merge_bins2segements(scdna_matrix, genome_reference, bin_size = 50)
-Merge_bins2segements <- function(scdna_matrix, genome_reference, bin_size=50){
+#' scdna_object <- Merge_bins2segments(scdna_matrix, genome_reference, bin_size = 50)
+Merge_bins2segments <- function(scdna_matrix, genome_reference, bin_size=50){
 
-  genome_reference <- genome_reference %>% group_by(chr) %>% mutate(bin=floor(row_number()/bin_size))
+  genome_reference <- genome_reference %>% dplyr::group_by(chr) %>% dplyr::mutate(bin=floor(row_number()/bin_size))
   genome_reference$bin_corrected <- cumsum(c(0,as.numeric(diff(genome_reference$bin))!=0))
 
   scdna_matrix$chr <- genome_reference$chr
@@ -22,9 +22,9 @@ Merge_bins2segements <- function(scdna_matrix, genome_reference, bin_size=50){
   scdna_matrix$index <- genome_reference$bin
 
   #coarse graining
-  scdna_matrix <- scdna_matrix %>% group_by(chr, bin) %>% summarise_all(list(median)) %>% filter(chr!='chrX' & chr!='chrY')
-  scdna_matrix_locs <- genome_reference %>% group_by(chr, bin_corrected) %>% mutate(start=min(start)) %>% mutate(end = max(end))
-  scdna_matrix_locs <- scdna_matrix_locs %>% group_by(chr, bin_corrected) %>% summarise_all(list(median))
+  scdna_matrix <- scdna_matrix %>% dplyr::group_by(chr, bin) %>% dplyr::summarise_all(list(median)) %>% filter(chr!='chrX' & chr!='chrY')
+  scdna_matrix_locs <- genome_reference %>% dplyr::group_by(chr, bin_corrected) %>% dplyr::mutate(start=min(start)) %>% dplyr::mutate(end = max(end))
+  scdna_matrix_locs <- scdna_matrix_locs %>%dplyr::group_by(chr, bin_corrected) %>% dplyr::summarise_all(list(median))
   scdna_matrix_locs <- scdna_matrix_locs[, c('chr', 'start', 'end', 'bin')]
   scdna_matrix_locs <- scdna_matrix_locs %>% filter(chr != 'chrX' & chr != 'chrY')
 
@@ -78,7 +78,7 @@ Iden_replicating_cells <- function(scdna_matrix){
 #' @return The index of selecting signal segments
 #'
 #' @export
-Iden_signal_segements <- function(scdna_matrix){
+Iden_signal_segments <- function(scdna_matrix){
   scdna_matrix_no_Sphase <- scdna_matrix
   scdna_matrix_no_Sphase[is.na(scdna_matrix_no_Sphase)] <- 0
   arm_sd <- apply(scdna_matrix_no_Sphase, 1, sd)

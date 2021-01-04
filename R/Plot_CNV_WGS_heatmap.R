@@ -32,8 +32,13 @@ PLot_CNV_subclone_heatmap <-function(CNVsample, label, Gene_Order, index_remain_
 
   rownames(CNVsample) <- Gene_Order[['Gene_ID']]
 
-  mat = t(CNVsample)
-  mat <- SortCells(t(mat), Label)
+  mat = CNVsample
+  # Recorder cells in each subclones based on the distance to normal CNV profile
+  normal_CNV <- matrix(2, nrow = 1, ncol = dim(CNVsample)[1])
+  d <- as.matrix(dist(t(cbind(t(as.matrix(normal_CNV)), mat))))[1, ]
+  d <- d[1:dim(mat)[2]+1]
+  
+  mat <- SortCells(as.matrix(mat), Label, d)
   mat[mat > 6] = 6
 
   Labels <- rep(paste0('C', sort(unique(Label)-1)), table(Label))
@@ -63,25 +68,42 @@ Sort_subclones <- function(mat, labels, hc){
   return(list(mat, labels))
 }
 
+#' @param tmp_scdna_matrix the matrix of cells
+#' @param Corr the distance to normal cell
+#' @return Ordered cells matrix
+#' 
+SortCells_in_subclone <- function(tmp_scdna_matrix, Corr){
+  
+  tmp_scdna_matrix <- as.data.frame(t(tmp_scdna_matrix))
+  tmp_scdna_matrix$corr <- Corr
+  tmp_scdna_matrix <- tmp_scdna_matrix %>% arrange(corr)
+  tmp_scdna_matrix$corr <- NULL
+  tmp_scdna_matrix <- t(tmp_scdna_matrix)
+  return(tmp_scdna_matrix)
+}
+
 #' @param tmp_scdna_matrix_arm scDNA matrix
 #' @param S1 labels of subclonses
+#' @param Corr the distance to normal cell
 #' @return Ordered cells based on per subclones
 #' @export
-SortCells <- function(tmp_scdna_matrix_arm, S1){
+SortCells <- function(tmp_scdna_matrix_arm, S1, Corr){
   ## Re-order cells according to the cluster labels
   clusterlabel <- c()
   barcodes <- c()
-
+  
   tmp_matrix <- as.data.frame(matrix(0, dim(tmp_scdna_matrix_arm)[1], dim(tmp_scdna_matrix_arm)[2]))
-  for (j in 1:max(S1)){
+  for (j in 1:length(unique(S1))){
     clusterlabel <- c(clusterlabel, length(which(S1 == j)))
     barcodes <- c(barcodes, colnames(tmp_scdna_matrix_arm)[which(S1 == j)])
     if(j == 1){
       tmp_matrix[, 1:clusterlabel] = tmp_scdna_matrix_arm[, which(S1 == j)]
+      tmp_matrix[, 1:clusterlabel] <- SortCells_in_subclone(tmp_matrix[, 1:clusterlabel], Corr[which(S1 == j)])
     }else{
       a = sum(clusterlabel[1:j-1]) + 1
       b = sum(clusterlabel[1:j])
       tmp_matrix[, a:b]=tmp_scdna_matrix_arm[, which(S1 == j)]
+      tmp_matrix[, a:b] <- SortCells_in_subclone(tmp_matrix[, a:b], Corr[which(S1 == j)])
     }
   }
   tmp_matrix <- as.matrix(tmp_matrix)
@@ -90,6 +112,7 @@ SortCells <- function(tmp_scdna_matrix_arm, S1){
   tmp_matrix <- t(tmp_matrix)
   return(tmp_matrix)
 }
+
 
 #' @import RColorBrewer
 #' @import ComplexHeatmap
@@ -108,21 +131,24 @@ Plot_CNV_heatmap <- function(mat, labels, gene_chr_mark, filename){
   ht_font = 40
   grid_height = 1
   col_fun = colorRamp2(c(0,1,2,3,4,5,6), c('blue', 'light blue', 'white', 'light salmon', 'coral', 'red', 'dark red'))
-
-  if(length(unique(labels$cluster)) > 9){
-    mycol = brewer.pal(9, 'Set1')
-    Label_color <- c(mycol, brewer.pal(12, 'Set3')[10:12], "#666666")
-    names(Label_color) <- sort(unique(labels$cluster))
-  }else if(length(unique(labels$cluster)) >= 3 & length(unique(labels$cluster)) <= 9){
-    Label_color <- brewer.pal(length(unique(labels$cluster)), "Set1")
-    names(Label_color) <- sort(unique(labels$cluster))
-  }else if(length(unique(labels$cluster)) == 2){
-    Label_color <- c("red", "green")
-    names(Label_color) <- sort(unique(labels$cluster))
-  }else if(length(unique(labels$cluster)) == 1){
-    Label_color <- c('red')
-    names(Label_color) <- sort(unique(labels$cluster))
-  }
+  
+  
+  #Label_color <- c('C1' = "#00BA38", 'C2' = "#F8766D", 'C3' = "#619CFF")
+  #Label_color <- c('C1' = "#00BFC4", 'C2' = "#F8766D")
+if(length(unique(labels$cluster)) > 9){
+  mycol = brewer.pal(9, 'Set1')
+  Label_color <- c(mycol, brewer.pal(12, 'Set3')[10:12], "#666666")
+  names(Label_color) <- sort(unique(labels$cluster))
+}else if(length(unique(labels$cluster)) >= 3 & length(unique(labels$cluster)) <= 9){
+  Label_color <- brewer.pal(length(unique(labels$cluster)), "Set1")
+  names(Label_color) <- sort(unique(labels$cluster))
+}else if(length(unique(labels$cluster)) == 2){
+  Label_color <- c("red", "green")
+  names(Label_color) <- sort(unique(labels$cluster))
+}else if(length(unique(labels$cluster)) == 1){
+  Label_color <- c('red')
+  names(Label_color) <- sort(unique(labels$cluster))
+}
 
   column_ha = HeatmapAnnotation(Chr = ComplexHeatmap::anno_mark(at=gene_chr_mark[1:22],
                                                                 side="bottom",

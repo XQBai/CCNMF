@@ -17,10 +17,9 @@
 #' @details
 #' This function is core of CCNMF and the parameters lambda1 and lambda2 control the objective function, meanwhile, the two hyper-parameters can be
 #' initially assigend.
+#' @return The list(H1, H2, S1, S2)
 #'
 #' @export
-#'
-#' @return The list(H1, H2, S1, S2)
 run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, lambda2){
 
   tolx <- 1e-4

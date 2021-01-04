@@ -9,6 +9,7 @@
 #' @param CoupledMatrix coupled Matrix
 #' @param beta hyper-parmater
 #' @param alpha hyper-parmater
+#'
 #' @export
 default_parameters_hyper <- function(CNVmatrix, W10, H10, RNAmatrix, W20, H20, CoupledMatrix, beta, alpha){
 
@@ -43,8 +44,8 @@ default_parameters_hyper <- function(CNVmatrix, W10, H10, RNAmatrix, W20, H20, C
 #' @param CoupledMatrix coupled Matrix
 #' @param beta hyper-parmater
 #' @param alpha hyper-parmater
-#' @export
 #'
+#' @export
 default_parameters_order <- function(CNVmatrix,W10, H10, RNAmatrix, W20, H20, CoupledMatrix){
 
   E <- RNAmatrix
