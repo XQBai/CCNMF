@@ -12,9 +12,9 @@ InputRNA <- function(pathRNA, file_gene = 'genes.tsv', file_barcodes = 'barcodes
 
   # Parse gene expression data first
   if(is(pathRNA, 'character') & is(file_gene, 'character') & is(file_barcodes, 'character') || is(file_matrix, 'character')){
-    RNAmatrix <- readMM(file.path(pathRNA, file_matrix))
-    genes <- read.table(file.path(pathRNA, file_gene))
-    barcodes <- read.csv(file.path(pathRNA, file_barcodes), header = FALSE)
+    RNAmatrix <- Matrix::readMM(file.path(pathRNA, file_matrix))
+    genes <- utils::read.table(file.path(pathRNA, file_gene))
+    barcodes <- utils::read.csv(file.path(pathRNA, file_barcodes), header = FALSE)
     RNAmatrix <- as.matrix(RNAmatrix)
     #rownames(RNAmatrix) <- levels(barcodes$V1)
     rownames(RNAmatrix) <- genes$V1
@@ -22,7 +22,7 @@ InputRNA <- function(pathRNA, file_gene = 'genes.tsv', file_barcodes = 'barcodes
   }else{
     stop("Input pathRNA must be characters, file_gene, file_barcodes and file_matrix must be 'genes.tsv', 'barcodes.tsv' and 'matrix.mtx' respectively.")
   }
-  RNAmatrix
+  return(RNAmatrix)
 }
 
 #' Input the copy number copy in scDNA-seq data, which is a csv file.
@@ -35,9 +35,9 @@ InputRNA <- function(pathRNA, file_gene = 'genes.tsv', file_barcodes = 'barcodes
 #' @export
 InputDNA <- function(pathDNA, file_CNV, Verbose = TRUE){
   if(Verbose == FALSE & is(pathDNA, 'character') & is(file_CNV, 'character')){
-    CNVmatrix <- read.csv(file.path(pathDNA, file_CNV))
+    CNVmatrix <- utils::read.csv(file.path(pathDNA, file_CNV))
   }else if(Verbose == TRUE & is(pathDNA, 'character') & is(file_CNV, 'character')){
-    CNVmatrix <- read.table(file.path(pathDNA, file_CNV))
+    CNVmatrix <- utils::read.table(file.path(pathDNA, file_CNV))
     List_index <- Handle_string(rownames(CNVmatrix))
     chr <- List_index$chr
     start <- List_index$start
@@ -51,7 +51,7 @@ InputDNA <- function(pathDNA, file_CNV, Verbose = TRUE){
   }else{
     stop("Input pathDNA must be characters, file_CNV must be the csv file.")
   }
-  CNVmatrix
+  return(CNVmatrix)
 }
 
 #' @description Convert the 10X cnv data to the input of CCNMF
@@ -137,14 +137,15 @@ gene_filter <- function(RNAmatrix){
 #'  @export
 Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19'){
 
-  utils::globalVariables(c('TxDb.Mmusculus.UCSC.mm9.knownGene', 'TxDb.Mmusculus.UCSC.mm9.knownGene',
-                           'entrezgene', 'ensembl_gene_id'))
+  # utils::globalVariables(c('TxDb.Mmusculus.UCSC.mm9.knownGene', 'TxDb.Mmusculus.UCSC.mm9.knownGene',
+  #                          'entrezgene', 'ensembl_gene_id'))
+
   if(reference_name == 'hg19'){
-    txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+    txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
   } else if(reference_name == 'hg38'){
-    txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
+    txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene::TxDb.Hsapiens.UCSC.hg38.knownGene
   } else if(reference_name == 'mm9'){
-    txdb <- TxDb.Mmusculus.UCSC.mm9.knownGene
+    txdb <- TxDb.Mmusculus.UCSC.mm9.knownGene::TxDb.Mmusculus.UCSC.mm9.knownGene
   } else{
     stop("There is no corresponding reference in TxDb... package, the another function was suggested...")
   }
@@ -152,14 +153,14 @@ Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19
   # load the corresponding gene annotations
   g <- genes(txdb, single.strand.genes.only = FALSE)
   # Convert 1, 2, 3... to chr1, chr2, chr3...
-  df_CNV <- mutate(CNVmatrix, chr = paste0("chr", chr))
+  df_CNV <- dplyr::mutate(CNVmatrix, chr = paste0("chr", chr))
   # Convert g to a GRanges object
-  cnv_gr <- makeGRangesFromDataFrame(df_CNV, keep.extra.columns = TRUE)
+  cnv_gr <- GenomicRanges::makeGRangesFromDataFrame(df_CNV, keep.extra.columns = TRUE)
   # Find overlaps between gene and region based annotation
-  olaps <- findOverlaps(g, cnv_gr)
+  olaps <- IRanges::findOverlaps(g, cnv_gr)
   #Convert this into a gene and copy number data frame
   cell_names <- names(mcols(cnv_gr)@listData)
-  df_gene <- data_frame(entrezgene = names(g)[queryHits(olaps)])
+  df_gene <- dplyr::data_frame(entrezgene = names(g)[queryHits(olaps)])
   for (i in 1:length(cell_names)){
     r <- as.data.frame(mcols(cnv_gr)@listData[i])[subjectHits(olaps),]
     r <- as.data.frame(r)
@@ -177,9 +178,9 @@ Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19
     drop_na()
 
   # Retain the only genes that uniquely mapped.
-  df_gene <- count(df_gene, ensembl_gene_id) %>%
-      filter(n == 1) %>%
-      inner_join(df_gene) %>%
+  df_gene <- dplyr::count(df_gene, ensembl_gene_id) %>%
+    dplyr::filter(n == 1) %>%
+    dplyr::inner_join(df_gene) %>%
       dplyr::select(-n)
       options(warn = -1)
 
@@ -208,11 +209,11 @@ Estimate_Coupled_matrix <- function(RNAmatrix, CNVmatrix, reference_name = 'hg19
 process_RNA_matrix <- function(pathRNA){
 
   RNAdata <- Read10X(data.dir = pathRNA)
-  RNAObj <- CreateSeuratObject(counts = RNAdata, project = 'RNAObj', min.cells = round(dim(RNAdata)[2]*0.1), min.features = 2000)
-  RNAObj <- NormalizeData(RNAObj, normalization.method = 'LogNormalize', scale.factor = 10000)
-  RNAObj <- FindVariableFeatures(RNAObj, selection.method = 'vst', nfeatures = 2000)
+  RNAObj <-Seurat::CreateSeuratObject(counts = RNAdata, project = 'RNAObj', min.cells = round(dim(RNAdata)[2]*0.1), min.features = 2000)
+  RNAObj <- Seurat::NormalizeData(RNAObj, normalization.method = 'LogNormalize', scale.factor = 10000)
+  RNAObj <- Seurat::FindVariableFeatures(RNAObj, selection.method = 'vst', nfeatures = 2000)
   all.genes <- rownames(RNAObj)
-  RNAObj <- ScaleData(RNAObj, features = all.genes)
+  RNAObj <- Seurat::ScaleData(RNAObj, features = all.genes)
   RNAmatrix <- RNAObj@assays$RNA@scale.data[RNAObj@assays$RNA@var.features, ]
   return(RNAmatrix)
 }
@@ -223,7 +224,7 @@ process_RNA_matrix <- function(pathRNA){
 #' @param RNAobject the seurat object of RNA
 #' @export
 AlignRNAgenes <- function(pathRNA, RNAobject){
-  Gene <- read.table(file.path(pathRNA, 'genes.tsv'))
+  Gene <- utils::read.table(file.path(pathRNA, 'genes.tsv'))
   RNAscale <- RNAobject@assays$RNA@scale.data[RNAobject@assays$RNA@var.features, ]
   RNAscale <- RNAscale[intersect(Gene$V1, rownames(RNAscale)), ]
   #rownames(RNAscale) <- ConvertGenenames(rownames(RNAscale), Gene, Logic = FALSE)
@@ -258,15 +259,15 @@ ConvertGenenames <- function(inputgene, Gene, Logic=TRUE){
 #' @export
 run_Seurat_RNA <- function(RNAdata, min.cells = 6, min.features = 0){
   #RNAdata <- Read10X(data.dir = path)
-  RNAobject <- CreateSeuratObject(counts = RNAdata, project = 'RNAobject', min.cells = min.cells, min.features = min.features)
-  RNAobject <- NormalizeData(RNAobject, normalization.method = 'LogNormalize', scale.factor = 10000)
-  RNAobject <- FindVariableFeatures(RNAobject, selection.method = 'vst', nfeatures = 2000)
+  RNAobject <- Seurat::CreateSeuratObject(counts = RNAdata, project = 'RNAobject', min.cells = min.cells, min.features = min.features)
+  RNAobject <- Seurat::NormalizeData(RNAobject, normalization.method = 'LogNormalize', scale.factor = 10000)
+  RNAobject <- Seurat::FindVariableFeatures(RNAobject, selection.method = 'vst', nfeatures = 2000)
   all.genes <- rownames(RNAobject)
-  RNAobject <- ScaleData(RNAobject, features = all.genes)
+  RNAobject <- Seurat::ScaleData(RNAobject, features = all.genes)
 
-  RNAobject <- RunPCA(RNAobject, features = VariableFeatures(object = RNAobject))
-  RNAobject <- FindNeighbors(RNAobject, dims = 1:10)
-  RNAobject <- FindClusters(RNAobject, resolution = 0.2)
+  RNAobject <- Seurat::RunPCA(RNAobject, features = VariableFeatures(object = RNAobject))
+  RNAobject <- Seurat::FindNeighbors(RNAobject, dims = 1:10)
+  RNAobject <- Seurat::FindClusters(RNAobject, resolution = 0.2)
   #L <- Idents(RNAobject)
   return(RNAobject)
 }

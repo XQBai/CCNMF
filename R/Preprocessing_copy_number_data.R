@@ -22,11 +22,11 @@ Merge_bins2segments <- function(scdna_matrix, genome_reference, bin_size=50){
   scdna_matrix$index <- genome_reference$bin
 
   #coarse graining
-  scdna_matrix <- scdna_matrix %>% dplyr::group_by(chr, bin) %>% dplyr::summarise_all(list(median)) %>% filter(chr!='chrX' & chr!='chrY')
+  scdna_matrix <- scdna_matrix %>% dplyr::group_by(chr, bin) %>% dplyr::summarise_all(list(median)) %>% dplyr::filter(chr!='chrX' & chr!='chrY')
   scdna_matrix_locs <- genome_reference %>% dplyr::group_by(chr, bin_corrected) %>% dplyr::mutate(start=min(start)) %>% dplyr::mutate(end = max(end))
   scdna_matrix_locs <- scdna_matrix_locs %>%dplyr::group_by(chr, bin_corrected) %>% dplyr::summarise_all(list(median))
   scdna_matrix_locs <- scdna_matrix_locs[, c('chr', 'start', 'end', 'bin')]
-  scdna_matrix_locs <- scdna_matrix_locs %>% filter(chr != 'chrX' & chr != 'chrY')
+  scdna_matrix_locs <- scdna_matrix_locs %>% dplyr::filter(chr != 'chrX' & chr != 'chrY')
 
   scdna_matrix$chr <- NULL
   scdna_matrix$bin <- NULL
@@ -153,15 +153,16 @@ Find_genes_on_signal_segments <- function(scdna_matrix_locs, index_segement, gen
 #' @export
 Align_bins_genes <- function(gene_locs, genome_reference){
 
-  genome_reference <- genome_reference %>% filter(.data$chr != 'chrX' & .data$chr != 'chrY')
-  cnv_gr <- makeGRangesFromDataFrame(genome_reference, keep.extra.columns = TRUE)
-  gene_gr <- makeGRangesFromDataFrame(gene_locs, keep.extra.columns = TRUE, ignore.strand = TRUE)
+  genome_reference <- genome_reference %>% dplyr::filter(.data$chr != 'chrX' & .data$chr != 'chrY')
+  cnv_gr <- GenomicRanges::makeGRangesFromDataFrame(genome_reference, keep.extra.columns = TRUE)
+  gene_gr <- GenomicRanges::makeGRangesFromDataFrame(gene_locs, keep.extra.columns = TRUE, ignore.strand = TRUE)
 
   # Find the overlaps between gene and chr regions based on annotation
-  olaps <- findOverlaps(gene_gr, cnv_gr)
+  olaps <- IRanges::findOverlaps(gene_gr, cnv_gr)
 
   df_gene <- data_frame(gene = gene_locs$gene[queryHits(olaps)],
                         cnv_bins = cnv_gr$bin[subjectHits(olaps)])
+
   unique_genes <- as.matrix(unique(df_gene$gene))
   bin_index <- apply(unique_genes, 1, function(x){df_gene$cnv_bins[which(df_gene$gene == x)]})
 
@@ -183,7 +184,7 @@ Convert_scDNA_genes_matrix <- function(scDNA, genes_bin){
   tmp_sizes <- lapply(genes_bin$bins,function(x){length(x)})
   bin_index <- rep(1:length(tmp_sizes), unlist(tmp_sizes))
   scDNA$index <- bin_index
-  scDNA <- scDNA %>% group_by(.data$index) %>% summarise_all(list(mean), na.rm=T)
+  scDNA <- scDNA %>% dplyr::group_by(.data$index) %>% dplyr::summarise_all(list(mean), na.rm=T)
   scDNA$index <- NULL
   saveRDS(scDNA, file='./scDNA_genes_matrix.rds')
   return(scDNA)

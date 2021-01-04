@@ -8,7 +8,7 @@ library(ggplot2)
 
 path <- '../data'
 
-# Input data 
+# Input data
 scDNA <- fread(file.path(path, 'NCI_N87/scDNA/NCI_N87.tsv'))
 scDNA_barcode <- read.table(file.path(path, 'NCI_N87/scDNA/NCI-N87_cell_barcodes.txt'))
 
@@ -25,10 +25,10 @@ index_remain_cells <- Iden_replicating_cells(scdna_object[[1]])
 # import the GRch38 genes bed file
 gene_locs <- read.csv(file.path(path, 'gene_locs.bed'), sep='\t', header = F)
 colnames(gene_locs) <- c('gene', 'chr', 'start', 'end')
-gene_locs <- gene_locs %>% filter(chr != 'X' & chr != 'Y') 
+gene_locs <- gene_locs %>% filter(chr != 'X' & chr != 'Y')
 gene_locs$chr <- paste0('chr', gene_locs$chr)
 
-# Select genes on signal 50kb-segemental bins 
+# Select genes on signal 50kb-segemental bins
 index_signal_segement <- Iden_signal_segements(scdna_object[[1]][,index_remain_cells])
 selected_scDNA_genes <- Find_genes_on_signal_segments(scdna_object[[2]], index_signal_segement, gene_locs)
 
@@ -46,7 +46,7 @@ scDNA_genes_matrix <- as.matrix(scDNA_genes_matrix)
 
 CNVmatrix <- scDNA_genes_matrix[intersect(unique(genes_bin$gene),selected_scDNA_genes$gene), index_remain_cells]
 
-# Input scRNA matrix 
+# Input scRNA matrix
 ## No InputRNA function
 RNAmatrix <- InputRNA(file.path(path, 'NCI_N87/scRNA/'))
 
@@ -59,11 +59,11 @@ saveRDS(RNAmatrix_input, file='./RNAmatrix_input.rds')
 
 ### Run CCNMF.R
 ncluster = 2
-ResultsCCNMF <- Integrate_CCNMF(CNVmatrix_input, RNAmatrix_input, ncluster, initial_parameters = 'same-order', 
+ResultsCCNMF <- Integrate_CCNMF(CNVmatrix_input, RNAmatrix_input, ncluster, initial_parameters = 'same-order',
                                 initial_coupling = 'default')
 
 ### Plot the subclones heatmap for CNV data
-PLot_CNV_subclone_heatmap(scDNA_genes_matrix, ResultsCCNMF[[5]], gene_locs, index_remain_cells)
+Plot_CNV_subclone_heatmap(scDNA_genes_matrix, ResultsCCNMF[[5]], gene_locs, index_remain_cells)
 
-  
-  
+
+

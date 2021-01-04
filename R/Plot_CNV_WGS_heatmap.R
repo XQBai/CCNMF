@@ -1,15 +1,21 @@
 #' @import RColorBrewer
-#' @param CNVsample copy number data matrix with all genes
+#' @param CNVsample copy number data matrix with all genes, dimension: cells
 #' @param label subclones labeling of CCNMF
 #' @param Gene_order dataframe of genes locs
 #' @param index_remain_cells cell index of non-replicating cells
+#' @param is.noise Logistic parm. if TRUE, the subclone figure contains noise cells
 #' @return the figure of subclones heatmap
 #' @export
-PLot_CNV_subclone_heatmap <-function(CNVsample, label, Gene_Order, index_remain_cells){
+Plot_CNV_subclone_heatmap <-function(CNVsample, label, Gene_Order, index_remain_cells=NULL, is.noise=FALSE){
 
-  Label <- matrix(0, nrow=dim(CNVsample)[2])
-  Label[index_remain_cells] <- label
-  Label <- Label + 1
+  # If there are noisy cells, we define new Label to set noise cells as a new cluster
+  if(is.noise){
+    Label <- matrix(0, nrow=dim(CNVsample)[2])
+    Label[index_remain_cells] <- label
+    Label <- Label + 1
+  }else{
+    Label <- label
+  }
 
   Gene_Order[['Gene_ID']] = as.character(Gene_Order[["gene"]])
   Gene_Order[['Gene_Chr']] = as.character(Gene_Order[["chr"]])
@@ -37,7 +43,7 @@ PLot_CNV_subclone_heatmap <-function(CNVsample, label, Gene_Order, index_remain_
   normal_CNV <- matrix(2, nrow = 1, ncol = dim(CNVsample)[1])
   d <- as.matrix(dist(t(cbind(t(as.matrix(normal_CNV)), mat))))[1, ]
   d <- d[1:dim(mat)[2]+1]
-  
+
   mat <- SortCells(as.matrix(mat), Label, d)
   mat[mat > 6] = 6
 
@@ -48,7 +54,7 @@ PLot_CNV_subclone_heatmap <-function(CNVsample, label, Gene_Order, index_remain_
   gene_chr_mark = c(0, cumsum(gene_chr$lengths))[seq_along(gene_chr$lengths)]+1
   names(gene_chr_mark) = gene_chr$values
 
-  Plot_CNV_heatmap(mat, Labels, gene_chr_mark, 'Subclones_no_noise.pdf')
+  Plot_CNV_heatmap(mat, Labels, gene_chr_mark, 'Subclones_figure.pdf')
 }
 
 #' @param mat the matrix of segments-bins
@@ -71,9 +77,9 @@ Sort_subclones <- function(mat, labels, hc){
 #' @param tmp_scdna_matrix the matrix of cells
 #' @param Corr the distance to normal cell
 #' @return Ordered cells matrix
-#' 
+#'
 SortCells_in_subclone <- function(tmp_scdna_matrix, Corr){
-  
+
   tmp_scdna_matrix <- as.data.frame(t(tmp_scdna_matrix))
   tmp_scdna_matrix$corr <- Corr
   tmp_scdna_matrix <- tmp_scdna_matrix %>% arrange(corr)
@@ -91,7 +97,7 @@ SortCells <- function(tmp_scdna_matrix_arm, S1, Corr){
   ## Re-order cells according to the cluster labels
   clusterlabel <- c()
   barcodes <- c()
-  
+
   tmp_matrix <- as.data.frame(matrix(0, dim(tmp_scdna_matrix_arm)[1], dim(tmp_scdna_matrix_arm)[2]))
   for (j in 1:length(unique(S1))){
     clusterlabel <- c(clusterlabel, length(which(S1 == j)))
@@ -131,8 +137,8 @@ Plot_CNV_heatmap <- function(mat, labels, gene_chr_mark, filename){
   ht_font = 40
   grid_height = 1
   col_fun = colorRamp2(c(0,1,2,3,4,5,6), c('blue', 'light blue', 'white', 'light salmon', 'coral', 'red', 'dark red'))
-  
-  
+
+
   #Label_color <- c('C1' = "#00BA38", 'C2' = "#F8766D", 'C3' = "#619CFF")
   #Label_color <- c('C1' = "#00BFC4", 'C2' = "#F8766D")
 if(length(unique(labels$cluster)) > 9){

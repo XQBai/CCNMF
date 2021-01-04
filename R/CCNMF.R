@@ -30,14 +30,14 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
   print('Initializing W10 and H10...')
   ngenes <- dim(CNVmatrix)[1]
   ncells <- dim(CNVmatrix)[2]
-  W10 <- matrix(runif(ngenes*ncluster, 0, 1), ngenes, ncluster)
-  H10 <- matrix(runif(ncluster * ncells, 0, 1), ncluster, ncells)
+  W10 <- matrix(stats::runif(ngenes*ncluster, 0, 1), ngenes, ncluster)
+  H10 <- matrix(stats::runif(ncluster * ncells, 0, 1), ncluster, ncells)
 
   print('Initializing W20 and H20 matrirx...')
   ngenes <- dim(RNAmatrix)[1]
   ncells <- dim(RNAmatrix)[2]
-  W20 <- matrix(runif(ngenes*ncluster, 0, 1), ngenes, ncluster)
-  H20 <- matrix(runif(ncluster * ncells, 0, 1), ncluster, ncells)
+  W20 <- matrix(stats::runif(ngenes*ncluster, 0, 1), ngenes, ncluster)
+  H20 <- matrix(stats::runif(ncluster * ncells, 0, 1), ncluster, ncells)
   # Normalize the W10 and W20
   m1 <- matrix(0, nrow <- ncluster, ncol <- ncluster)
   m2 <- matrix(0, nrow <- ncluster, ncol <- ncluster)
@@ -149,19 +149,19 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
         FC1[, i] <- apply(O, 1, function(x){sum(x[which(S10 == i)] > 2)}) / apply(O, 1, function(x){sum(x[which(S10 != i)] > 2)} + 1) * (sum(S10 == i)/sum(S10 != i) + 1)
         FC2[, i] <- apply(E, 1, function(x){sum(x[which(S20 == i)] > 0)}) / apply(E, 1, function(x){sum(x[which(S20 != i)] >0)} + 1) * (sum(S20 == i)/sum(S20 != i) + 1)
       }
-      WP1 <- normalize.quantiles.robust(FC1, use.median = TRUE)
-      WP2 <- normalize.quantiles.robust(FC2, use.median = TRUE)
+      WP1 <- preprocessCore::normalize.quantiles.robust(FC1, use.median = TRUE)
+      WP2 <- preprocessCore::normalize.quantiles.robust(FC2, use.median = TRUE)
       print('after')
       S <- t(WP2) %*% A %*% WP1
       print("run S")
       #S <- 1/(1 + S)
       S <- 1/(1 + ((S-min(S)))/(max(S) - min(S)))
-      assignment <- HungarianSolver(S)$pairs
+      assignment <- RcppHungarian::HungarianSolver(S)$pairs
       err <- (dnorm0-dnorm1)/dnorm0
       W20 <- W20[, assignment[, 2]]
       H20 <- H20[assignment[, 2], ]
       print(assignment)
-      print(HungarianSolver(S)$cost)
+      print(RcppHungarian::HungarianSolver(S)$cost)
       print(dnorm0)
       print((dnorm0-dnorm1)/dnorm0)
       nassign <- nassign + 1
