@@ -4,9 +4,9 @@ library(dplyr)
 library(ggplot2)
 
 
-setwd('./CCNMF/example')
+#setwd('./CCNMF/example')
 
-path <- './CCNMF/data'
+path <- '../data'
 
 # Input data 
 scDNA <- fread(file.path(path, 'NCI_N87/scDNA/NCI_N87.tsv'))
@@ -17,7 +17,7 @@ genome_reference <- fread(file.path(path, 'scDNA_GRCh38_cellranger.bed'),header=
 names(genome_reference) <- c('chr', 'start', 'end', 'bin')
 
 # Merge CNV matrix with small bins to 50kb-segemental bins as the columns
-scdna_object <- Merge_bins2segements(scDNA, genome_reference, bin_size = 50)
+scdna_object <- Merge_bins2segments(scDNA, genome_reference, bin_size = 50)
 
 # Filter replicating/nosiy cells by computing standard deviation for cells on 50kb segemental-bins
 index_remain_cells <- Iden_replicating_cells(scdna_object[[1]])
@@ -46,8 +46,9 @@ scDNA_genes_matrix <- as.matrix(scDNA_genes_matrix)
 
 CNVmatrix <- scDNA_genes_matrix[intersect(unique(genes_bin$gene),selected_scDNA_genes$gene), index_remain_cells]
 
-# Input scRNA matrix
-RNAmatrix <- InputRNA(file.path(path, '/NCI_N87/scRNA/'))
+# Input scRNA matrix 
+## No InputRNA function
+RNAmatrix <- InputRNA(file.path(path, 'NCI_N87/scRNA/'))
 
 # Find common genes between scRNA matrix and scDNA matrix, then as input to CCNMF
 CNVmatrix_input <- CNVmatrix[intersect(rownames(CNVmatrix), rownames(RNAmatrix)), ]
