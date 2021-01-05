@@ -52,7 +52,7 @@ Iden_replicating_cells <- function(scdna_matrix){
 
   cells_sd <- apply(scdna_matrix, 2, sd)
   ## Model the mixture distribution and removing small group
-  estimate_mix_model <- normalmixEM(cells_sd)
+  estimate_mix_model <- mixtools::normalmixEM(cells_sd)
   index_no_Sphase <- which(estimate_mix_model$lambda == max(estimate_mix_model$lambda))
   index_label <- apply(estimate_mix_model$posterior, 1, function(x){which(x == max(x))})
   index_remain <- which(index_label == index_no_Sphase)
@@ -62,7 +62,7 @@ Iden_replicating_cells <- function(scdna_matrix){
   dev.off()
 
   pdf('./Cell_standard_deviation_density.pdf')
-  mixtools::plot.mixEM(normalmixEM(cells_sd), whichplots = 2)
+  mixtools::plot.mixEM(mixtools::normalmixEM(cells_sd), whichplots = 2)
   dev.off()
 
   return(index_remain)

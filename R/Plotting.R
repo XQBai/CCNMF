@@ -1,4 +1,47 @@
 
+#' @description Output the integrated figure for tsne and heatmap
+#' @param CNVmatrix_input input cnv matrix
+#' @param RNAmatrix_input inout RNA matrix
+#' @param ncluster the number of subclones
+#' @param Result_CCNMF The result of CCNMF
+#' @return DE genes
+#'
+#' @export
+Plot_integrated_figure <- function(CNVmatrix_input, RNAmatrix_input, ncluster, Result_CCNMF){
+
+  S1 <- Result_CCNMF[[5]]
+  S2 <- Result_CCNMF[[6]]
+
+  RNADE <- DiffExp(RNAmatrix_input, S2)
+  if(length(unique(S2)) == 2){
+    commonDE <- RNADE[[3]][1:10]
+  }else if(length(unique(S2)) > 2){
+    commonDE <- c()
+    DE_list <- RNADE[[3]]
+    for(i in 1:length(DE_list)){
+      commonDE <- c(commonDE, DE_list[[i]][1:5])
+    }
+    commonDE <- unique(commonDE)
+  }
+
+  # DNADE <- DiffExp(CNVmatrix_input, S1)
+  # commonDE <- DNADE[[3]][1:10]
+  X <- CNVmatrix_input
+  D <- CNVmatrix_input[commonDE, ]
+  a <- median(D)
+  b <- max(D)
+  c <- min(D)
+  X1 <- (CNVmatrix_input-a)/(b - a)
+  X2 <- (CNVmatrix_input-a)/(a- c)
+
+  X[which(CNVmatrix_input > a)] <- X1[which(CNVmatrix_input > a)] * 2
+  X[which(CNVmatrix_input <= a)] <- X2[which(CNVmatrix_input <= a)] * 2
+
+  RNAmatrix_input <- as.matrix(RNAmatrix_input)
+  PlotMainResult(X, RNAmatrix_input, ResultsCCNMF, commonDE)
+  return(commonDE)
+}
+
 #' Output the all visualization of results from CCNMF
 #' Especially, the paired heatmap of differential genes and dimension reduction for both scRNA-seq and scDNA-seq data
 #' @import ggplot2

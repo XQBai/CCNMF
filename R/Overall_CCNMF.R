@@ -86,25 +86,6 @@ Integrate_CCNMF <- function(CNVmatrix_input, RNAmatrix_input, ncluster, initial_
 
   saveRDS(S1, file='S1.rds')
   saveRDS(S2, file='S2.rds')
-
-  RNADE <- DiffExp(RNAmatrix_input, S2)
-  commonDE <- RNADE[[3]][1:10]
-  # DNADE <- DiffExp(CNVmatrix_input, S1)
-  # commonDE <- DNADE[[3]][1:10]
-  X <- CNVmatrix_input
-  D <- CNVmatrix_input[commonDE, ]
-  a <- median(D)
-  b <- max(D)
-  c <- min(D)
-  X1 <- (CNVmatrix_input-a)/(b - a)
-  X2 <- (CNVmatrix_input-a)/(a- c)
-
-  X[which(CNVmatrix_input > a)] <- X1[which(CNVmatrix_input > a)] * 2
-  X[which(CNVmatrix_input <= a)] <- X2[which(CNVmatrix_input <= a)] * 2
-
-  RNAmatrix_input <- as.matrix(RNAmatrix_input)
-  PlotMainResult(X, RNAmatrix_input, ResultsCCNMF, commonDE)
-  ResultsCCNMF[[7]] <- commonDE
   return(ResultsCCNMF)
 }
 

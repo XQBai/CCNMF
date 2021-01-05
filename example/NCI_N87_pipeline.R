@@ -62,6 +62,7 @@ ncluster = 2
 ResultsCCNMF <- Integrate_CCNMF(CNVmatrix_input, RNAmatrix_input, ncluster, initial_parameters = 'same-order',
                                 initial_coupling = 'default')
 
+Plot_integrated_figure(CNVmatrix_input, RNAmatrix_input, ncluster, ResultsCCNMF)
 ### Plot the subclones heatmap for CNV data
 Plot_CNV_subclone_heatmap(scDNA_genes_matrix, ResultsCCNMF[[5]], gene_locs, index_remain_cells)
 
