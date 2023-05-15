@@ -98,20 +98,37 @@ Iden_signal_segments <- function(scdna_matrix){
   index_segement_tmp <- index_segement
   index_seg_cluster_tmp <- index_seg_cluster
 
-  ## Stop select when length of selected segements is less than 20% of total
-  while(length(index_segement) <= round(0.2 * dim(scdna_matrix)[1])){
-
-    if (length(index_segement) >= round(0.21 * dim(scdna_matrix)[1])){
-      break
-    }
+  if (length(index_segement) > round(0.2 * dim(scdna_matrix)[1])){
+    index_segement <- index_segement
+  }else{
     segement_index_remain <- which(index_label == index_seg_cluster_tmp)
     arm_sd_tmp <- arm_sd[segement_index_remain]
     estimate_mix_model_tmp <- normalmixEM(arm_sd_tmp)
     index_seg_cluster_tmp <- which(estimate_mix_model_tmp$lambda == max(estimate_mix_model_tmp$lambda))
-    index_label_tmp <- apply(estimate_mix_model_tmp$posterior, 1, function(x){which(x == max(x))})
-    index_segement_tmp <- segement_index_remain[which(index_label_tmp != index_seg_cluster_tmp)]
-    index_segement <- c(index_segement, index_segement_tmp)
+    index_ref <- which(estimate_mix_model_tmp$mu == max(estimate_mix_model_tmp$mu))
+    if (index_seg_cluster_tmp == index_ref){
+      index_segement <- index_segement
+    }else{
+      index_label_tmp <- apply(estimate_mix_model_tmp$posterior, 1, function(x){which(x == max(x))})
+      index_segement_tmp <- segement_index_remain[which(index_label_tmp != index_seg_cluster_tmp)]
+      index_segement <- c(index_segement, index_segement_tmp)
+      }
   }
+
+  # ## Stop select when length of selected segements is less than 20% of total
+  # while(length(index_segement) <= round(0.2 * dim(scdna_matrix)[1])){
+  #
+  #   if (length(index_segement) > round(0.2 * dim(scdna_matrix)[1])){
+  #     break
+  #   }
+  #   segement_index_remain <- which(index_label == index_seg_cluster_tmp)
+  #   arm_sd_tmp <- arm_sd[segement_index_remain]
+  #   estimate_mix_model_tmp <- normalmixEM(arm_sd_tmp)
+  #   index_seg_cluster_tmp <- which(estimate_mix_model_tmp$lambda == max(estimate_mix_model_tmp$lambda))
+  #   index_label_tmp <- apply(estimate_mix_model_tmp$posterior, 1, function(x){which(x == max(x))})
+  #   index_segement_tmp <- segement_index_remain[which(index_label_tmp != index_seg_cluster_tmp)]
+  #   index_segement <- c(index_segement, index_segement_tmp)
+  # }
   return(index_segement)
 }
 

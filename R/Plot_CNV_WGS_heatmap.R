@@ -165,12 +165,17 @@ if(length(unique(labels$cluster)) > 9){
                 show_column_dend = FALSE,
                 show_row_names = FALSE,
                 show_column_names = FALSE,
+                # row_km = 4,
+                #column_km = 22,
                 col = col_fun,
                 border = TRUE,
+                row_split = labels$cluster,
+                row_title = NULL,
                 bottom_annotation = column_ha,
                 cluster_columns = FALSE,
                 cluster_rows = FALSE,
                 row_gap = grid::unit(0.3, "in"),
+                column_gap = grid::unit(1, 'mm'),
                 height = grid::unit(18, 'in'),
                 width = grid::unit(36, 'in'),
                 heatmap_legend_param = list(title_gp = gpar(fontsize = ht_font, fontface = "bold"),
@@ -183,21 +188,24 @@ if(length(unique(labels$cluster)) > 9){
                 show_column_dend = FALSE,
                 show_row_names = FALSE,
                 show_column_names = FALSE,
+                # row_km = 4,
+                row_split = labels$cluster,
+                row_title = NULL,
                 border = TRUE,
                 cluster_columns = FALSE,
                 cluster_rows = FALSE,
                 row_gap = grid::unit(0.3, "in"),
-                width = grid::unit(0.5, 'in'),
+                width = grid::unit(1, 'in'),
                 heatmap_legend_param = list(title_gp = gpar(fontsize = ht_font, fontface = "bold"),
                                             direction = "horizontal",
                                             grid_width = grid::unit(grid_height, 'inch'),
                                             grid_height = grid::unit(grid_height,"inch" ),
-                                            labels_gp = gpar(fontsize = 0.8 * ht_font)))
+                                            labels_gp = gpar(fontsize = 1 * ht_font)))
   ht_list = ht1 + ht2
 
-  pdf(file=filename, width=40, height=20)
+  pdf(file=filename, width=42, height=20)
   ComplexHeatmap::draw(ht_list,
-                       ht_gap = unit(0.5, 'cm'),
+                       ht_gap = unit(1, 'cm'),
                        heatmap_legend_side = "left",
                        annotation_legend_side = 'left',
                        merge_legend = T
@@ -205,13 +213,15 @@ if(length(unique(labels$cluster)) > 9){
   chr_line <- gene_chr_mark/dim(mat)[2]
   chr_line[1] <- 0
   chr_line <- c(chr_line, 1)
-  lapply(chr_line,
-         FUN = function(p){
-           decorate_heatmap_body("CNV", {
-             grid.lines(c(p, p), c(0, 1), gp = gpar(lty = 1, lwd = 3))
-           }, slice = 1)
-         }
-  )
+  for (i in 1:length(unique(labels$cluster))){
+    lapply(chr_line,
+           FUN = function(p){
+             decorate_heatmap_body("CNV", {
+               grid.lines(c(p, p), c(0, 1), gp = gpar(lty = 1, lwd = 5))
+             }, slice = i)
+           }
+    )
+  }
   dev.off()
 }
 
