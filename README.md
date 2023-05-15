@@ -42,4 +42,4 @@ Xiangqi Bai, Zhana Duren, Lin Wan and Li C. Xia. [Joint Inference of Clonal Stru
 <!--## License-->
 <!--[MIT](https://github.com/XQBai/CCNMF/blob/master/LICENSE)-->
 ## Contact
-### xqbai@amss.ac.cn and li.xia@einsteinmed.org.
+### xiangqi@stanford.edu and lcxia@scut.edu.cn.
