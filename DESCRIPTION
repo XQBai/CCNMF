@@ -1,15 +1,14 @@
 Package: CCNMF
 Type: Package
 Title: CCNMF: A Coupled-Clone Nonnegative Matrix Factorization Method for Integrating Tumor Single-Cell RNA and DNA Sequencing Data
-Version: 1.1.0
-Author: person("Xiangqi", "Bai", email = "xqbai@amss.ac.cn", role = c("aut", "cre"))
-Maintainer: The package maintainer <xqbai@amss.ac.cn>
+Version: 2.1.0
+Author: person("Xiangqi", "Bai", email = "xiangqi@stanford.edu", role = c("aut", "cre"))
+Maintainer: The package maintainer <xiangqi@stanford.edu>
 Description: CCNMF joinly cluster the single-cell RNA-seq and single-cell DNA-seq from the same cancer by NMF. Then the ientified clones of copy number varients in scDNA-seq can be corresoponded to the subpopulations of gene expression in scRNA-seq.
-Depends: R (>= 3.6.0)
-License: file LICENSE
+License: MIT file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 Imports:
   methods,
   Matrix,
@@ -17,15 +16,18 @@ Imports:
   ggplot2 (>= 3.2.1),
   ComplexHeatmap,
   GenomicRanges,
-  RColorBrewer,
   RcppHungarian,
+  dplyr,
+  mixtools
+Depends:
+  gtools,
+  Biobase,
+  rlang,
+  RColorBrewer,
   Rtsne,
   circlize,
-  dplyr,
-  mixtools,
   preprocessCore,
   uwot,
-  Seurat,
   Hmisc,
   cowplot,
   data.table,
@@ -40,13 +42,17 @@ Imports:
   pheatmap,
   tidyr,
   S4Vectors,
-  grid
-Suggests:
+  grid,
+  cli,
+  Biobase,
+  Seurat,
   devtools,
+  mclust,
   readxl,
+  mixdist,
+  lsa
+Suggests:
   tibble,
   plyr,
   gplots,
   shiny
-
-
