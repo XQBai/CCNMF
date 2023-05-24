@@ -4,20 +4,18 @@
 \alias{Plot}
 \title{The function of plotting figure}
 \usage{
-Plot(Data, Cluster, title, labelx, labely)
+Plot(Data, Clones, title, labelx, labely)
 }
 \arguments{
 \item{Data}{the input data which need to be plotted, which can be raw matrix or H matrix concluded by NMF}
+
+\item{Clones}{the clusters label}
 
 \item{title}{the title of the figure, which is a string}
 
 \item{labelx}{X-coordinate of name, such as 'pca 1', 'tsne 1', 'umap 1'}
 
 \item{labely}{Y-coordinate of name, such as 'pca 2', 'tsne 2', 'umap 2'}
-
-\item{label}{the clusters label}
-
-\item{savefig}{the name of the pdf file, such as "figure.pdf"}
 }
 \value{
 A pdf file

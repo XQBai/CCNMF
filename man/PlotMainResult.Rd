@@ -5,16 +5,14 @@
 \title{Output the all visualization of results from CCNMF
 Especially, the paired heatmap of differential genes and dimension reduction for both scRNA-seq and scDNA-seq data}
 \usage{
-PlotMainResult(CNVmatrix, RNAmatrix, Result_CCNMF, DElist)
+PlotMainResult(CNVmatrix, RNAmatrix, Result_CCNMF)
 }
 \arguments{
 \item{CNVmatrix}{copy number matrix}
 
 \item{RNAmatrix}{gene expression matrix}
 
-\item{DElist}{The list of differentiate genes}
-
-\item{Results_CCNMF}{The result of CCNMF}
+\item{Result_CCNMF}{The result of CCNMF}
 }
 \value{
 The integrated figure

@@ -13,7 +13,11 @@ Plottsne(Data, label, title, Datatype = "scRNA-seq", need_PCA = TRUE)
 
 \item{label}{the clusters label of this figure which is the result of CCNMF}
 
+\item{title}{the title of the figure}
+
 \item{Datatype}{The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'}
+
+\item{need_PCA}{logic}
 }
 \value{
 The pdf figure based on tsne

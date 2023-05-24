@@ -13,6 +13,8 @@ Plotumap(Data, label, Datatype = "scRNA-seq", need_PCA = TRUE)
 \item{label}{the clusters label of this figure which is the result of CCNMF}
 
 \item{Datatype}{The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'}
+
+\item{need_PCA}{Logic}
 }
 \value{
 The pdf figure based on umap

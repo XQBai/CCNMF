@@ -12,6 +12,8 @@ Plotpca(Data, label, title, Datatype = "scRNA-seq")
 
 \item{label}{the clusters label of this figure which is the result of CCNMF}
 
+\item{title}{the title of the figure}
+
 \item{Datatype}{The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'}
 }
 \value{
