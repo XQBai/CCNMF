@@ -6,6 +6,7 @@
 #' @importFrom RcppHungarian 'HungarianSolver'
 #' @import NMF
 #' @import stats
+#' @import lsa
 #'
 #' @param ncluster the number of subpopulations/clones seted by users
 #' @param RNAmatrix A matrix of gene expression in scRNA-seq
@@ -22,7 +23,7 @@
 #' @export
 run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, lambda2){
 
-  tolx <- 1e-4
+  tolx <- 1e-5
   tolfun <- 1e-6
   rate <- 1
 
@@ -59,7 +60,7 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
   eps <- 0.0001
   err <- 1
   print('Iterating coupledNMF...')
-  maxiter <- 500
+  maxiter <- 1000
   terms <- numeric(maxiter)
   it <- 1
   dnorm0 <- norm((O-W10 %*% H10), type <- 'F')**2 + lambda1 * (norm(E - W20 %*% H20)**2)
@@ -69,29 +70,6 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
   while (it <= maxiter){
     it <- it + 1
     nassign <- 0
-    # print(it)
-
-    ## The updated algorithms
-    # T1 <- as.matrix(lambda2 * (t(A) %*% W20))
-    # T1[which(T1 < 0)] <- 0
-    # numer <- t(W10) %*% O
-    # H1 <- H10 * (numer / (t(W10) %*% W10 %*% H10) + eps)
-    # H1[which(H1 <0)] <- 0
-    # numer <- O %*% t(H1)
-    # mu11 <- sum(apply(t(W10) %*% (W10 %*% H10 %*% t(H10)), MARGIN = 2, sum))
-    # mu12 <- sum(apply(t(W10) %*% (O %*% t(H10) + lambda2* t(A) %*% W20), MARGIN = 2, sum))
-    # W1 <- W10 * (numer + T1 + W10 * mu11) / (eps + W10 %*% H1 %*% t(H1) + W10 * mu12)
-    # W1[which(W1 <0)] <- W1
-    #
-    # T2 <- as.matrix((lambda2 / (lambda1 + eps)) * (A %*% W1))
-    # T2[which(T2 < 0)] <- 0
-    # numer <- t(W20) %*% E
-    # H2 <- H20 * (numer)/(t(W20) %*% W20 %*% H20 + eps)
-    # H2[which(H2 < 0 )] <- 0
-    # mu21 <- sum(apply(t(W20) %*% (W20 %*% (H2 %*% t(H2))), MARGIN = 2, sum))
-    # mu22 <- sum(apply(t(W20) %*% (E %*% t(H20) + T2), MARGIN = 2, sum))
-    # W2 <- W20 * (E %*% t(H20) + T2 + W20 * mu21) / (eps + W20 %*% H2 %*% t(H2) + W20 * mu22)
-    # W2[which(W2 < 0)] <- 0
 
     T1 <- as.matrix(lambda2 * (t(A) %*% W20))
     T1[which(T1 < 0)] <- 0
@@ -154,15 +132,14 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
       print('after')
       S <- t(WP2) %*% A %*% WP1
       print("run S")
-      #S <- 1/(1 + S)
       S <- 1/(1 + ((S-min(S)))/(max(S) - min(S)))
-      assignment <- RcppHungarian::HungarianSolver(S)$pairs
       err <- (dnorm0-dnorm1)/dnorm0
-      W20 <- W20[, assignment[, 2]]
-      H20 <- H20[assignment[, 2], ]
-      print(assignment)
-      print(RcppHungarian::HungarianSolver(S)$cost)
+      # W20 <- W20[, assignment[, 2]]
+      # H20 <- H20[assignment[, 2], ]
+      # print(assignment)
+      # print(RcppHungarian::HungarianSolver(S)$cost)
       print(dnorm0)
+      print(dnorm1)
       print((dnorm0-dnorm1)/dnorm0)
       nassign <- nassign + 1
       # Cost <- matrix(0, nrow = round(maxiter/50), ncol = 1)
@@ -183,43 +160,37 @@ run_CCNMF <- function(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, la
   W2 <- W20
   H2 <- H20
 
-  Score <- 0.5*(norm((O - W1 %*% H1), type <- 'F')**2) + lambda1/2 * (norm(E - W2 %*% H2)**2) - lambda2 * sum(diag(t(W2) %*% A %*% W1))
+  # Score <- 0.5*(norm((O - W1 %*% H1), type <- 'F')**2) + lambda1/2 * (norm(E - W2 %*% H2)**2) - lambda2 * sum(diag(t(W2) %*% A %*% W1))
+  S10 <- apply(H1, 2, function(x){which(x == max(x))})
+  S20 <- apply(H2, 2, function(x){which(x == max(x))})
+
+  #### Reassignment
+  FC1 <- matrix(0, nrow <- ngenes, ncol <- ncluster)
+  FC2 <- matrix(0, nrow <- ngenes, ncol <- ncluster)
+  for (i in 1:ncluster){
+    FC1[, i] <- apply(O, 1, function(x){mean(x[which(S10 == i)] )})
+    FC2[, i] <- apply(E, 1, function(x){mean(x[which(S20 == i)] )})
+  }
+
+  ### Calculate the cosine similarity
+  similarity <- matrix(0, nrow = ncluster, ncol = ncluster)
+  for (i in 1:ncluster){
+    for (j in 1:ncluster){
+      similarity[i, j] <- round(cosine(FC1[, i], FC2[, j]), 3)
+    }
+  }
+
+  S = 1 - similarity
+  assignment <- HungarianSolver(S)$pairs
+  W2 <- W2[, assignment[, 2]]
+  H2 <- H2[assignment[, 2], ]
   S1 <- apply(H1, 2, function(x){which(x == max(x))})
   S2 <- apply(H2, 2, function(x){which(x == max(x))})
-  # for (i in 1:ncluster){
-  #   FC1[, i] <- apply(O, 1, function(x){sum(x[which(S10 == i)] > 2)}) / apply(O, 1, function(x){sum(x[which(S10 != i)] > 2)} + 1) * (sum(S10 == i)/sum(S10 != i) + 1)
-  #   FC2[, i] <- apply(E, 1, function(x){sum(x[which(S20 == i)] > 0)}) / apply(E, 1, function(x){sum(x[which(S20 != i)] >0)} + 1) * (sum(S20 == i)/sum(S20 != i) + 1)
-  # }
-  # WP1 <- normalize.quantiles.robust(FC1, use.median = TRUE)
-  # WP2 <- normalize.quantiles.robust(FC2, use.median = TRUE)
-  # T <- t(WP2) %*% A %*% WP1
-  # T1 <- sum(apply(T, MARGIN=2, sum) %*% diag(1/apply(T, MARGIN = 2, function(x)(sum(x)**2))) %*% T %*% diag(1/apply(T, MARGIN = 2, sum)))
-  # detr <- sum(diag(T))
-
-  # S10 <- apply(H1, 2, function(x){which(x == max(x))})
-  # S20 <- apply(H2, 2, function(x){which(x == max(x))})
-  # FC1 <- matrix(0, nrow <- ngenes, ncol <- ncluster)
-  # FC2 <- matrix(0, nrow <- ngenes, ncol <- ncluster)
-  # print('before')
-  # for (i in 1:ncluster){
-  #   FC1[, i] <- apply(O, 1, function(x){sum(x[which(S10 == i)] > 2)}) / apply(O, 1, function(x){sum(x[which(S10 != i)] > 2)} + 1) * (sum(S10 == i)/sum(S10 != i) + 1)
-  #   FC2[, i] <- apply(E, 1, function(x){sum(x[which(S20 == i)] > 0)}) / apply(E, 1, function(x){sum(x[which(S20 != i)] >0)} + 1) * (sum(S20 == i)/sum(S20 != i) + 1)
-  # }
-  # WP1 <- normalize.quantiles.robust(FC1, use.median = TRUE)
-  # WP2 <- normalize.quantiles.robust(FC2, use.median = TRUE)
-  # print('after')
-  # S <- t(WP2) %*% A %*% WP1
-  # S <- 1/(1 + (S-min(S)))
-  # assignment <- HungarianSolver(S)$pairs
-  # W2 <- W2[, assignment[, 2]]
-  # H2 <- H2[assignment[, 2], ]
-  # print(assignment)
-  # print(HungarianSolver(S)$cost)
 
   eq1 <- 0.5*(norm((O - W1 %*% H1), type <- 'F')**2)
   eq2 <- lambda1/2 * (norm(E - W2 %*% H2)**2)
   eq3 <- lambda2 * sum(diag(t(W2) %*% A %*% W1))
-
+  score <- eq1 + eq2 - eq3
   print(paste0('eq1 ', round(eq1)))
   print(paste0('eq2 ', round(eq2)))
   print(paste0('eq3 ', round(eq3)))

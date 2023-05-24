@@ -4,14 +4,21 @@
 #' @param CNVmatrix_input input cnv matrix
 #' @param RNAmatrix_input inout rna matrix
 #' @param ncluster the number of given clusters
-#' @param initial_parameters the set of lambda1 and lambda2
-#' @param initial_coupling set up coupling matrix
 #' @param CoupledMatrix the user-defined coupled matrix
+#' @param initial_parameters the set of lambda1 and lambda2
+#' @param lambda1 the weight of NMF
+#' @param lambda2 the weight of coupled item
+#' @param alpha hyper-parameter alpha
+#' @param beta hyper-parameter beta
+#' @param initial_coupling set up coupling matrix
 #' @return list of results
 #'
 #' @export
-Integrate_CCNMF <- function(CNVmatrix_input, RNAmatrix_input, ncluster, initial_parameters = c('hyper-parameter', 'same-order', 'user-defined'), lambda1 = 1, lambda2 = 2,
-                            initial_coupling = c('default', 'user-defined'), CoupledMatrix = NULL){
+Integrate_CCNMF <- function(CNVmatrix_input, RNAmatrix_input, ncluster,
+                            CoupledMatrix = NULL,
+                            initial_parameters = c('hyper-parameter', 'same-order', 'user-defined'),
+                            lambda1 = 1, lambda2 = 2, alpha = NULL, beta = NULL,
+                            initial_coupling = c('default', 'user-defined')){
 
   #utils::globalVariables(c('ncluster'))
   # Remove all 0 rows in CNVmatrix and RNAmatrix
@@ -24,11 +31,11 @@ Integrate_CCNMF <- function(CNVmatrix_input, RNAmatrix_input, ncluster, initial_
   CNVmatrix_input <- CNVmatrix_input[index_mean2, ]
   RNAmatrix_input <- RNAmatrix_input[index_mean2, ]
 
-  # Construct the identy matrix as copuled matrix, or use an informative matrix
-  if(initial_coupling == 'user-defind'){
-    CoupledMatrix <- CoupledMatrix
-  }else{
+  # Construct the identity matrix as copuled matrix, or use an informative matrix
+  if(is.null(CoupledMatrix)){
     CoupledMatrix <- as.matrix(diag(dim(CNVmatrix_input)[1]))
+  }else{
+    CoupledMatrix <- CoupledMatrix
   }
 
   # Initialize lambda1 and lambda2 by seting the items in object function in the same order
@@ -41,7 +48,8 @@ Integrate_CCNMF <- function(CNVmatrix_input, RNAmatrix_input, ncluster, initial_
     resRNA <- NMF::nmf(RNAmatrix_input, ncluster)
     W20 <- resRNA@fit@W
     H20 <- resRNA@fit@H
-    par <- default_parameters_hyper(CNVmatrix_input, W10, H10, RNAmatrix_input, W20, H20, CoupledMatrix)
+    par <- default_parameters_hyper(CNVmatrix_input, W10, H10, RNAmatrix_input, W20, H20,
+                                    CoupledMatrix, alpha, beta)
     lambda1 <- par[1]
     lambda2 <- par[2]
   }else if(initial_parameters == 'same-order'){
@@ -84,8 +92,8 @@ Integrate_CCNMF <- function(CNVmatrix_input, RNAmatrix_input, ncluster, initial_
   ResultsCCNMF[[5]] <- S1
   ResultsCCNMF[[6]] <- S2
 
-  saveRDS(S1, file='S1.rds')
-  saveRDS(S2, file='S2.rds')
+  # saveRDS(S1, file='S1.rds')
+  # saveRDS(S2, file='S2.rds')
   return(ResultsCCNMF)
 }
 

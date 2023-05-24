@@ -41,20 +41,26 @@ Plot_CNV_subclone_heatmap <-function(CNVsample, label, Gene_Order, index_remain_
   mat = CNVsample
   # Recorder cells in each subclones based on the distance to normal CNV profile
   normal_CNV <- matrix(2, nrow = 1, ncol = dim(CNVsample)[1])
-  d <- as.matrix(dist(t(cbind(t(as.matrix(normal_CNV)), mat))))[1, ]
-  d <- d[1:dim(mat)[2]+1]
+  d <- apply(mat, 2, function(x){dist(t(cbind(t(as.matrix(normal_CNV)), x)))[1]})
+  # d <- as.matrix(dist(t(cbind(t(as.matrix(normal_CNV)), mat))))[1, ]
+  # d <- d[1:dim(mat)[2]+1]
 
   mat <- SortCells(as.matrix(mat), Label, d)
   mat[mat > 6] = 6
 
-  Labels <- rep(paste0('C', sort(unique(Label)-1)), table(Label))
+  if(is.noise == TRUE){
+    Labels <- rep(paste0('C', sort(unique(Label)-1)), table(Label))
+  }else{
+    Labels <- rep(paste0('C', sort(unique(Label))), table(Label))
+  }
+
   Labels <- data.frame(cluster = Labels)
 
   gene_chr = rle(Gene_Order[["Gene_Chr"]][match(colnames(mat), Gene_Order[["Gene_ID"]])])
   gene_chr_mark = c(0, cumsum(gene_chr$lengths))[seq_along(gene_chr$lengths)]+1
   names(gene_chr_mark) = gene_chr$values
 
-  Plot_CNV_heatmap(mat, Labels, gene_chr_mark, 'Subclones_figure.pdf')
+  Plot_CNV_heatmap(mat, Labels, gene_chr_mark, 'Subclones_figure.pdf', is.noise)
 }
 
 #' @param mat the matrix of segments-bins
@@ -74,6 +80,8 @@ Sort_subclones <- function(mat, labels, hc){
   return(list(mat, labels))
 }
 
+#' @import dplyr
+#' @importFrom rlang .data
 #' @param tmp_scdna_matrix the matrix of cells
 #' @param Corr the distance to normal cell
 #' @return Ordered cells matrix
@@ -82,7 +90,7 @@ SortCells_in_subclone <- function(tmp_scdna_matrix, Corr){
 
   tmp_scdna_matrix <- as.data.frame(t(tmp_scdna_matrix))
   tmp_scdna_matrix$corr <- Corr
-  tmp_scdna_matrix <- tmp_scdna_matrix %>% arrange(corr)
+  tmp_scdna_matrix <- tmp_scdna_matrix %>% dplyr::arrange(.data$corr)
   tmp_scdna_matrix$corr <- NULL
   tmp_scdna_matrix <- t(tmp_scdna_matrix)
   return(tmp_scdna_matrix)
@@ -130,30 +138,59 @@ SortCells <- function(tmp_scdna_matrix_arm, S1, Corr){
 #' @param labels subclones clustering labels
 #' @param gene_chr_mark chromosome regions
 #' @param filename the name of output figure
+#' @param is.noise Logistic parm. if TRUE, the subclone figure contains noise cells
 #' @return the pdf figure
 #' @export
-Plot_CNV_heatmap <- function(mat, labels, gene_chr_mark, filename){
+Plot_CNV_heatmap <- function(mat, labels, gene_chr_mark, filename, is.noise){
 
   ht_font = 40
   grid_height = 1
   col_fun = colorRamp2(c(0,1,2,3,4,5,6), c('blue', 'light blue', 'white', 'light salmon', 'coral', 'red', 'dark red'))
 
-
-  #Label_color <- c('C1' = "#00BA38", 'C2' = "#F8766D", 'C3' = "#619CFF")
-  #Label_color <- c('C1' = "#00BFC4", 'C2' = "#F8766D")
 if(length(unique(labels$cluster)) > 9){
-  mycol = brewer.pal(9, 'Set1')
-  Label_color <- c(mycol, brewer.pal(12, 'Set3')[10:12], "#666666")
-  names(Label_color) <- sort(unique(labels$cluster))
-}else if(length(unique(labels$cluster)) >= 3 & length(unique(labels$cluster)) <= 9){
-  Label_color <- brewer.pal(length(unique(labels$cluster)), "Set1")
-  names(Label_color) <- sort(unique(labels$cluster))
+  if(is.noise == TRUE){
+    mycol = brewer.pal(9, 'Set1')
+    Label_color <- c("#666666", mycol, brewer.pal(12, 'Set3')[10:12])
+    names(Label_color) <- sort(unique(labels$cluster))
+  }else{
+    mycol = brewer.pal(9, 'Set1')
+    Label_color <- c(mycol, brewer.pal(12, 'Set3')[10:12], "#666666")
+    names(Label_color) <- sort(unique(labels$cluster))
+  }
+}else if(length(unique(labels$cluster)) >= 4 & length(unique(labels$cluster)) <= 9){
+  if(is.noise == TRUE){
+    Label_color <- c("#666666", brewer.pal(length(unique(labels$cluster))-1, "Set1"))
+    names(Label_color) <- sort(unique(labels$cluster))
+  }else{
+    Label_color <- brewer.pal(length(unique(labels$cluster)), "Set1")
+    names(Label_color) <- sort(unique(labels$cluster))
+  }
+}else if(length(unique(labels$cluster)) == 3){
+  if(is.noise == TRUE){
+    # Label_color <- c("#e41a1c", "#377eb8")
+    Label_color <- c("#666666", "#e41a1c", "#377eb8")
+    names(Label_color) <- sort(unique(labels$cluster))
+  }else{
+    Label_color <- brewer.pal(length(unique(labels$cluster)), "Set1")
+    names(Label_color) <- sort(unique(labels$cluster))
+  }
 }else if(length(unique(labels$cluster)) == 2){
-  Label_color <- c("red", "green")
-  names(Label_color) <- sort(unique(labels$cluster))
+  if(is.noise == TRUE){
+    # Label_color <- c("#e41a1c", "#377eb8")
+    Label_color <- c("#666666", "#e41a1c")
+    names(Label_color) <- sort(unique(labels$cluster))
+  }else{
+    Label_color <- c("#e41a1c", "#377eb8")
+    names(Label_color) <- sort(unique(labels$cluster))
+  }
 }else if(length(unique(labels$cluster)) == 1){
-  Label_color <- c('red')
-  names(Label_color) <- sort(unique(labels$cluster))
+  if(is.noise == TRUE){
+    Label_color <- c("#666666")
+    names(Label_color) <- sort(unique(labels$cluster))
+  }else{
+    Label_color <- c('#e41a1c')
+    names(Label_color) <- sort(unique(labels$cluster))
+  }
 }
 
   column_ha = HeatmapAnnotation(Chr = ComplexHeatmap::anno_mark(at=gene_chr_mark[1:22],
