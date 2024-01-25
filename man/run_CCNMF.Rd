@@ -6,6 +6,8 @@
 Run \code{CCNMF} accross a range pf initializations}
 \usage{
 run_CCNMF(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, lambda2)
+
+run_CCNMF(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, lambda2)
 }
 \arguments{
 \item{ncluster}{the number of subpopulations/clones seted by users}
@@ -22,12 +24,20 @@ run_CCNMF(ncluster, RNAmatrix, CNVmatrix, CoupledMatrix, lambda1, lambda2)
 }
 \value{
 The list(H1, H2, S1, S2)
+
+The list(H1, H2, S1, S2)
 }
 \description{
 Run CCNMF function
 Run \code{CCNMF} accross a range pf initializations
+
+Run CCNMF function
+Run \code{CCNMF} accross a range pf initializations
 }
 \details{
+This function is core of CCNMF and the parameters lambda1 and lambda2 control the objective function, meanwhile, the two hyper-parameters can be
+initially assigend.
+
 This function is core of CCNMF and the parameters lambda1 and lambda2 control the objective function, meanwhile, the two hyper-parameters can be
 initially assigend.
 }

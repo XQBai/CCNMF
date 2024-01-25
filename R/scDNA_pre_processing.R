@@ -1,14 +1,17 @@
+#' @title Merge CNV bins into genome segment
 #' @description  Merge small bins to large segement
-#' @import dplyr
+#' @importFrom dplyr select
+#' @importFrom dplyr filter
+#' @importFrom dplyr mutate
+#' @importFrom dplyr group_by
+#' @importFrom dplyr summarise_all
+#' @importFrom dplyr ungroup
+#' @importFrom dplyr row_number
 #' @importFrom rlang .data
-#' @import stats
-#'
-#' @param  scdna_matrix: name of copy number variation file
-#' @param  bin_size: number of #kb bins
+#' @param scdna_matrix name of copy number variation file
+#' @param bin_size number of #kb bins
 #' @return scdna_matrix_merge  CNV matrix with 1Mb segments
 #' @export
-#' @examples
-#' scdna_object <- Merge_bins2segments(scdna_matrix, bin_size = 50)
 Merge_bins2segments <- function(scdna_matrix, bin_size=50){
 
   genome_reference <- scdna_matrix %>%
@@ -22,15 +25,15 @@ Merge_bins2segments <- function(scdna_matrix, bin_size=50){
     dplyr::mutate(bin_corrected = genome_reference$bin_corrected) %>%
     dplyr::group_by(.data$chr, .data$bin_corrected, .drop = FALSE) %>%
     dplyr::summarise_all(list(median)) %>%
-    ungroup() %>%
+    dplyr::ungroup() %>%
     dplyr::filter(.data$chr!='chrX' & .data$chr!='chrY') %>%
     dplyr::select(-c('chr', 'start', 'end', 'bin', 'bin_corrected'))
 
     return(scdna_matrix_merge)
 }
 
+#' @title Identify replicating cells
 #' @importFrom mixtools normalmixEM
-#' @import stats
 #' @import grDevices
 #' @import ggplot2
 #'
@@ -59,9 +62,9 @@ Iden_replicating_cells <- function(scdna_matrix_merge){
   return(index_remain)
 }
 
+#' @title CNV feature selection
 #' @description Identify the signal segments by computing standard deviation for 50kb bins across cells
 #' @importFrom mixtools normalmixEM
-#' @import stats
 #' @import ggplot2
 #' @import grDevices
 #'
@@ -92,11 +95,19 @@ Iden_signal_segments <- function(scdna_matrix){
   return(index_segement)
 }
 
-
+#' @title Convert CNV on gene level
 #' @description Merge the bins corresponding to the same gene
-#' @import dplyr
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
+#' @importFrom dplyr mutate
+#' @importFrom dplyr group_by
+#' @importFrom dplyr ungroup
+#' @importFrom dplyr summarise_all
+#' @importFrom dplyr data_frame
+#' @importFrom S4Vectors queryHits
+#' @importFrom S4Vectors subjectHits
 #' @importFrom rlang .data
-#' @param scDNA_matrix The bins times cells CNV matrix
+#' @param scdna_matrix  The bins times cells CNV matrix
 #' @param gene_locs the list of bins index on genes
 #' @return the CNV matrix on genes
 #'

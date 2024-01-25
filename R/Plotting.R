@@ -1,16 +1,10 @@
-
 #' Output the all visualization of results from CCNMF
 #' Especially, the paired heatmap of differential genes and dimension reduction for both scRNA-seq and scDNA-seq data
-#' @import ggplot2
-#' @import cowplot
-#' @import ggplotify
-#'
 #' @description Output the all visualization of results from CCNMF
 #' @importFrom Rtsne Rtsne
 #' @importFrom uwot umap
-#' @import ggplot2
-#' @import grDevices
-#'
+#' @importFrom ggplot2 ggsave
+#' @importFrom cowplot plot_grid
 #' @param CNVmatrix copy number matrix
 #' @param RNAmatrix gene expression matrix
 #' @param Result_CCNMF The result of CCNMF
@@ -27,7 +21,7 @@ PlotMainResult <- function(CNVmatrix, RNAmatrix, Result_CCNMF){
   RNAdim <- Plottsne(H2, S2, 'tSNE plot of scRNA-seq data', Datatype = 'scRNA-seq', need_PCA = FALSE)
 
   myplot <- plot_grid(DNAdim, RNAdim, labels = c('A', 'B'), label_size = 12, scale = c(1, 1))
-  ggsave(filename ='Dim_plot.pdf', plot = myplot, width = 10, height = 4.5)
+  ggsave(filename ='CCNMF_Tsne_plot.pdf', plot = myplot, width = 10, height = 4.5)
 }
 
 
@@ -35,7 +29,7 @@ PlotMainResult <- function(CNVmatrix, RNAmatrix, Result_CCNMF){
 #' The rows in Data matrix represent the cells, the columns represent the genes/chr bins
 #'
 #' Plot the dimensional reduction figure by PCA
-#' @import stats
+#' @importFrom stats prcomp
 #' @param Data the orgial matrix or H matrix when the raw matrix after NMF
 #' @param label the clusters label of this figure which is the result of CCNMF
 #' @param Datatype The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'
@@ -52,7 +46,7 @@ Plotpca <- function(Data, label, title, Datatype = 'scRNA-seq'){
 #' Plot the dimensional reduction figure by tsne
 #' Before tsne, the PCA is applied to the original Data, then select the top 15 PCs and apply
 #' tsne to these components.
-#' @import stats
+#' @importFrom stats prcomp
 #' @param Data the orgial matrix or H matrix when the raw matrix after NMF
 #' @param label the clusters label of this figure which is the result of CCNMF
 #' @param Datatype The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'
@@ -78,7 +72,7 @@ Plottsne <- function(Data, label, title, Datatype = 'scRNA-seq', need_PCA = TRUE
 
 #' Plot the dimensional reduction figure by umap
 #' Firstly, we apply PCA for the high-dimensional data, then use Umap to the top 15 PCs.
-#' @import stats
+#' @importFrom stats prcomp
 #' @param Data the orgial matrix or H matrix when the raw matrix after NMF
 #' @param label the clusters label of this figure which is the result of CCNMF
 #' @param Datatype The type of input Data matrix, 'scRNA-seq' or 'scDNA-seq'
@@ -103,6 +97,7 @@ Plotumap <- function(Data, label, Datatype = 'scRNA-seq', need_PCA = TRUE){
 
 #' The function of plotting figure
 #' @import ggplot2
+#' @importFrom rlang .data
 #' @param Data the input data which need to be plotted, which can be raw matrix or H matrix concluded by NMF
 #' @param Clones the clusters label
 #' @param title the title of the figure, which is a string
@@ -116,7 +111,7 @@ Plot <- function(Data, Clones, title, labelx,  labely){
   colnames(Data) <- c('V1', 'V2')
   # ncluster <- max(Cluster)
   # Clones <- paste0('C', Cluster, sep='')
-  myplot <- ggplot(data = Data, ggplot2::aes(x = Data$V1, y=Data$V2, color = Clones)) +
+  myplot <- ggplot(data = Data, ggplot2::aes(x = .data$V1, y= .data$V2, color = Clones)) +
     geom_point(size = 0.5) +
     theme_classic() +
     labs(title= title, x = labelx, y= labely, fill = 'Clones') +

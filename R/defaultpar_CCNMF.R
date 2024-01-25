@@ -1,4 +1,4 @@
-
+#' @title Default hyper parameters
 #' @description Initialize the parameters lambda1 and lambda2 by hyper-parameter alpha and beta
 #' @param CNVmatrix the copy number matrix
 #' @param W10 W matrix of CNV's NMF
@@ -34,6 +34,7 @@ default_parameters_hyper <- function(CNVmatrix, W10, H10, RNAmatrix, W20, H20, C
   return(par)
 }
 
+#' @title Default parameters by order
 #' @description Initialize the parameters lambda1 and lambda2 by seting the items in object function in the same order
 #' @param CNVmatrix the copy number matrix
 #' @param W10 W matrix of CNV's NMF

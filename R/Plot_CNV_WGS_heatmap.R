@@ -1,7 +1,7 @@
-#' @import RColorBrewer
+#' @title Plot Subclonal CNV heatmap
 #' @param CNVsample copy number data matrix with all genes, dimension: cells
 #' @param label subclones labeling of CCNMF
-#' @param Gene_order dataframe of genes locs
+#' @param Gene_Order dataframe of genes locs
 #' @param index_remain_cells cell index of non-replicating cells
 #' @param is.noise Logistic parm. if TRUE, the subclone figure contains noise cells
 #' @return the figure of subclones heatmap
@@ -60,9 +60,10 @@ Plot_CNV_subclone_heatmap <-function(CNVsample, label, Gene_Order, index_remain_
   gene_chr_mark = c(0, cumsum(gene_chr$lengths))[seq_along(gene_chr$lengths)]+1
   names(gene_chr_mark) = gene_chr$values
 
-  Plot_CNV_heatmap(mat, Labels, gene_chr_mark, 'Subclones_figure.pdf', is.noise)
+  Plot_CNV_heatmap(mat, Labels, gene_chr_mark, 'scDNA_subclones.pdf', is.noise)
 }
 
+#' @title Sort subclones
 #' @param mat the matrix of segments-bins
 #' @param labels subclones index for cells
 #' @param hc results of hierarchical clustering
@@ -80,7 +81,8 @@ Sort_subclones <- function(mat, labels, hc){
   return(list(mat, labels))
 }
 
-#' @import dplyr
+#' @title Sort cells within subclone
+#' @importFrom dplyr arrange
 #' @importFrom rlang .data
 #' @param tmp_scdna_matrix the matrix of cells
 #' @param Corr the distance to normal cell
@@ -96,6 +98,7 @@ SortCells_in_subclone <- function(tmp_scdna_matrix, Corr){
   return(tmp_scdna_matrix)
 }
 
+#' @title Sort cells
 #' @param tmp_scdna_matrix_arm scDNA matrix
 #' @param S1 labels of subclonses
 #' @param Corr the distance to normal cell
@@ -127,7 +130,7 @@ SortCells <- function(tmp_scdna_matrix_arm, S1, Corr){
   return(tmp_matrix)
 }
 
-
+#' @title Plot CNV Heatmap
 #' @import RColorBrewer
 #' @import ComplexHeatmap
 #' @import circlize

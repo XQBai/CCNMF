@@ -129,6 +129,7 @@ Max_threshold_bounds <- function(data, threshold){
 }
 
 #' Smoothing by chromosome through moving average
+#' @importFrom stats filter
 #' @param obs_data the input matrix
 #' @param window_length the number of genes as window for smoothing
 #' @return matrix after smoothing
@@ -154,6 +155,7 @@ smooth_helper <- function(obs_data, window_length){
 
     custom_filter = custom_filter_numerator/rep(custom_filter_denominator, window_length)
 
+    #smoothed = stats::filter(vals, custom_filter, sides=2)
     smoothed = stats::filter(vals, custom_filter, sides=2)
 
     ind = which(! is.na(smoothed))
@@ -218,7 +220,7 @@ smooth_window <- function(data, window_length){
 }
 
 #' Smooth the matrix on chromosomes
-#' @import dplyr
+#' @importFrom dplyr filter
 #' @importFrom rlang .data
 #' @param data the input matrix
 #' @param window_length the number of genes
