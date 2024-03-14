@@ -59,7 +59,7 @@ devtools::install_github("labxscut/CCNMF")
 -->
 
 ## Reference
-Xiangqi Bai, Zhana Duren, Lin Wan, and Li C. Xia. [Joint Inference of Clonal Structure using Single-cell Genome and Transcriptome Sequencing Data, bioRxiv](https://www.biorxiv.org/content/10.1101/2020.02.04.934455v2)
+Xiangqi Bai, Zhana Duren, Lin Wan, and Li C. Xia. [Joint Inference of Clonal Structure using Single-cell Genome and Transcriptome Sequencing Data](https://academic.oup.com/nargab/article/6/1/lqae017/7606949) ***NAR Genomics and Bioinformatics***
 
 <!--## License-->
 <!--[MIT](https://github.com/XQBai/CCNMF/blob/master/LICENSE)-->
